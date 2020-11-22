@@ -520,6 +520,7 @@ NPC_Touch
 -------------------------
 */
 extern qboolean INV_SecurityKeyGive( gentity_t *target, const char *keyname );
+extern void G_Knockdown(gentity_t* self, gentity_t* attacker, vec3_t pushDir, float strength, qboolean breakSaberLock);
 void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace) 
 {
 	if(!self->NPC)

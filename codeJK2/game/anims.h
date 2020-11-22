@@ -1382,7 +1382,7 @@ typedef enum //# animNumber_e
 	FACE_ALERT,				//# 
 	FACE_SMILE,				//# 
 	FACE_FROWN,				//# 
-	FACE_DEAD,					//# 
+	FACE_DEAD,				//# 
 
 	//# #eol
 	MAX_ANIMATIONS,

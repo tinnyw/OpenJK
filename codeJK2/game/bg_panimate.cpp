@@ -3907,8 +3907,6 @@ qboolean PM_InOnGroundAnim ( playerState_t *ps )
 	case BOTH_KNOCKDOWN3:		//#
 	case BOTH_KNOCKDOWN4:		//#
 	case BOTH_KNOCKDOWN5:		//#
-	case BOTH_FORCEJUMPLEFT1:
-	case BOTH_FORCEJUMPRIGHT1:
 		if ( ps->legsAnimTimer < 500 )
 		{//pretty much horizontal by this point
 			return qtrue;

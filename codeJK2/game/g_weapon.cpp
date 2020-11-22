@@ -575,7 +575,7 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 	else
 	{
 		// in third person and you're the player
-		if (/*PM_IsShootDodgeWeapon(ent->client->ps.weapon) &&*/ cg.renderingThirdPerson && ent->s.number == 0) 
+		if (cg.renderingThirdPerson && ent->s.number == 0) 
 		{
 			trace_t		trace;
 			vec3_t		traceStart, traceEnd, cursorTargetPoint, fireDir, fireAng, weaponLoc;

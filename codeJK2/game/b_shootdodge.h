@@ -12,7 +12,7 @@ extern qboolean PM_IsShootdodgeWeapon(int weapon);
 
 
 // SHOOT DODGE GENERAL
-#define SHOOT_DODGE_TIME_DILATION .14f
+#define SHOOT_DODGE_TIME_DILATION .07f
 #define SHOOT_DODGE_PROJECTILE_SPEED_MULTIPLIER 1.7f
 
 

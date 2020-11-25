@@ -94,7 +94,7 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, gentity_t
 
 	missile->alt_fire = altFire;
 
-	// add some slop to the alt-fire direction
+	// add some slope to the alt-fire direction
 	if (owner->client && PM_InShootDodgeInAir(&owner->client->ps))
 	{
 		vel *= SHOOT_DODGE_PROJECTILE_SPEED_MULTIPLIER;
@@ -464,9 +464,6 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t w
 
 	AddLeanOfs(ent, muzzlePoint);
 }
-
-
-extern qboolean PM_InShootDodgeInAir(playerState_t* ps);
 
 //---------------------------------------------------------
 void FireWeapon( gentity_t *ent, qboolean alt_fire )

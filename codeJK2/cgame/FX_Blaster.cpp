@@ -46,12 +46,8 @@ void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weap
 	// hack the scale of the forward vector if we were just fired or bounced...this will shorten up the tail for a split second so tails don't clip so harshly
 	int dif = cg.time - cent->gent->s.pos.trTime;
 
-	if (cent && cent->gent && cent->gent->owner && PM_InShootDodgeInAir(&cent->gent->owner->client->ps))
-	{
-		float shootDodgeScale = SHOOT_DODGE_BLASTER_BOLT_FX_SCALE;
-		VectorScale(forward, shootDodgeScale, forward);
-	}
-	else if (dif < 75) // don't shorten up the tail in shoot dodge, it looks weird in slow mo
+	
+	if (dif < 75) // don't shorten up the tail in shoot dodge, it looks weird in slow mo
 	{
 		if (dif < 0)
 		{
@@ -61,6 +57,12 @@ void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weap
 		float scale = (dif / 75.0f) * 0.95f + 0.05f;
 
 		VectorScale(forward, scale, forward);
+
+		if (cent && cent->gent && cent->gent->owner && PM_InShootDodgeInAir(&cent->gent->owner->client->ps))
+		{
+			float shootDodgeScale = SHOOT_DODGE_BLASTER_BOLT_FX_SCALE;
+			VectorScale(forward, shootDodgeScale, forward);
+		}
 	}
 
 	if ( cent->gent && cent->gent->owner && cent->gent->owner->s.number > 0 )

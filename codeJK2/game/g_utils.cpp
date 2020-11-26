@@ -712,6 +712,13 @@ void G_InitGentity( gentity_t *e )
 	e->lastValidWaypoint	= WAYPOINT_NONE;
 }
 
+void debug_print(const char* msg)
+{
+#ifdef _DEBUG
+	Com_Printf(msg);
+#endif
+}
+
 
 extern qboolean PM_InDeathAnim(int legsAnim);
 // copied this from RazorAce's OJP project
@@ -724,60 +731,52 @@ gentity_t* FindRemoveAbleGent(void)
 	int i;
 	gentity_t* e = NULL;
 
-	//dead NPCs can be removed as well
-	for (i = MAX_CLIENTS; i < globals.num_entities++; i++)
+	// next focus on effects, then non ideally high volume projectiles like blaster alt fire or repeater primary fire projectiles, then finally light sources
+	for (i = MAX_CLIENTS; i < ENTITYNUM_MAX_NORMAL; i++)
 	{
 		e = &g_entities[i];
+		// temporary entities like effects
+		if (!strcmp(e->classname, "tempEntity"))
+		{//found one
+			debug_print("Warning: FindRemoveAbleGent removed a temp entity to prevent a max entity overflow.\n");
+			return e;
+		}
+
+		// repeater projectiles can be removed in a hurry just because they're so many of them it'll be hard to miss one
+		if (!strcmp(e->classname, "repeater_proj"))
+		{//found one
+			debug_print("Warning: FindRemoveAbleGent removed a repeater projectile entity to prevent a max entity overflow.\n");
+			return e;
+		}
+
+		//dead NPCs can be removed as well
 		if (e->NPC
 			&& e->health <= 0
 			&& e->NPC->timeOfDeath
 			&& e->NPC->timeOfDeath + 1000 < level.time) //NPC has been dead long enough for all the death related code to run.
 		{//found one
-			Com_Printf("Warning: FindRemoveAbleGent removed a dead NPC to prevent a max entity overflow.\n");
+			debug_print("Warning: FindRemoveAbleGent removed a dead NPC to prevent a max entity overflow.\n");
 			return e;
 		}
-	}
 
-	//try looking for scripted NPCs that are acting like dead bodies next.
-	for (i = MAX_CLIENTS; i < globals.num_entities++; i++)
-	{
-		e = &g_entities[i];
+		if (!strcmp(e->classname, "blaster_proj"))
+		{//found one
+			debug_print("Warning: FindRemoveAbleGent removed a blaster projectile entity to prevent a max entity overflow.\n");
+			return e;
+		}
+
+		// dying enemy
 		if (e->NPC && e->client && e->health > 0
 			&& PM_InDeathAnim(e->client->ps.legsAnim))
 		{//found one
-			Com_Printf("Warning: FindRemoveAbleGent removed a NPC that was faking death to prevent a max entity overflow.\n");
-			return e;
-		}
-	}
-
-	// next focus on effects, then non ideally high volume projectiles like blaster alt fire or repeater primary fire projectiles, then finally light sources
-	for (i = MAX_CLIENTS; i < globals.num_entities++; i++)
-	{
-		e = &g_entities[i];
-		if (!strcmp(e->classname, "tempEntity"))
-		{//found one
-			Com_Printf("Warning: FindRemoveAbleGent removed a light entity to prevent a max entity overflow.\n");
-			return e;
-		}
-
-		// this class name needs to be added to the repeater server code
-		if (!strcmp(e->classname, "repeater_proj"))
-		{//found one
-			Com_Printf("Warning: FindRemoveAbleGent removed a light entity to prevent a max entity overflow.\n");
-			return e;
-		}
-
-		// this class name needs to be added to the blaster server code
-		if (!strcmp(e->classname, "blaster"))
-		{//found one
-			Com_Printf("Warning: FindRemoveAbleGent removed a light entity to prevent a max entity overflow.\n");
+			debug_print("Warning: FindRemoveAbleGent removed a NPC that was faking death to prevent a max entity overflow.\n");
 			return e;
 		}
 
 		//light entities?
 		if (!strcmp(e->classname, "light"))
 		{//found one
-			Com_Printf("Warning: FindRemoveAbleGent removed a light entity to prevent a max entity overflow.\n");
+			debug_print("Warning: FindRemoveAbleGent removed a light entity to prevent a max entity overflow.\n");
 			return e;
 		}
 	}

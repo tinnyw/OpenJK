@@ -71,7 +71,7 @@ extern qboolean PM_SaberInIdle( int move );
 extern qboolean PM_SaberInStart( int move );
 extern qboolean PM_SaberKataDone( int curmove, int newmove );
 extern qboolean PM_SaberInSpecial( int move );
-extern qboolean PM_InDeathAnim ( void );
+extern qboolean PM_InDeathAnim ( int legsAnim );
 extern qboolean PM_StandingAnim( int anim );
 extern int PM_SaberFlipOverAttackMove( void );
 extern int PM_SaberJumpAttackMove( void );
@@ -134,7 +134,6 @@ extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
 extern void PM_TorsoAnimation( void );
 extern int PM_TorsoAnimForFrame( gentity_t *ent, int torsoFrame );
 extern int PM_AnimLength( int index, animNumber_t anim );
-extern qboolean PM_InDeathAnim ( void );
 extern qboolean PM_InOnGroundAnim ( playerState_t *ps );
 extern	weaponInfo_t	cg_weapons[MAX_WEAPONS];
 extern int PM_PickAnim( gentity_t *self, int minAnim, int maxAnim );
@@ -572,7 +571,7 @@ static void PM_JumpForDir( void )
 		anim = BOTH_JUMP1;
 		pm->ps->pm_flags &= ~PMF_BACKWARDS_JUMP;
 	}
-	if(!PM_InDeathAnim())
+	if(!PM_InDeathAnim(pm->ps->legsAnim))
 	{
 		PM_SetAnim(pm,SETANIM_LEGS,anim,SETANIM_FLAG_OVERRIDE, 100);		// Only blend over 100ms
 	}
@@ -1282,7 +1281,7 @@ static qboolean PM_CheckJump( void )
 	{//okay, we just jumped and we're in an attack
 		if ( !PM_RollingAnim( pm->ps->legsAnim )
 			&& !PM_InKnockDown( pm->ps )
-			&& !PM_InDeathAnim()
+			&& !PM_InDeathAnim(pm->ps->legsAnim)
 			&& !PM_PainAnim( pm->ps->torsoAnim )
 			&& !PM_FlippingAnim( pm->ps->legsAnim )
 			&& !PM_SpinningAnim( pm->ps->legsAnim )
@@ -2589,7 +2588,7 @@ static void PM_CrashLand( void )
 	}
 
 	qboolean deadFallSound = qfalse;
-	if( !PM_InDeathAnim() )
+	if( !PM_InDeathAnim(pm->ps->legsAnim) )
 	{
 		// if in shoot dodge and landed on the ground, stay in animation and wait for getup animation
 		if ( pm->cmd.upmove >= 0 && !PM_InKnockDown( pm->ps ) && !PM_InRoll( pm->ps ) && !PM_InShootDodge(pm->ps))
@@ -3049,7 +3048,7 @@ static void PM_GroundTraceMissed( void ) {
 				{//FIXME: if velocity[2] < 0 and didn't jump, use some falling anim
 					if ( pm->ps->velocity[2] <= 0 && !(pm->ps->pm_flags&PMF_JUMP_HELD))
 					{
-						if(!PM_InDeathAnim())
+						if(!PM_InDeathAnim(pm->ps->legsAnim))
 						{
 							vec3_t	moveDir, lookAngles, lookDir, lookRight;
 							int		anim = BOTH_INAIR1;
@@ -3099,7 +3098,7 @@ static void PM_GroundTraceMissed( void ) {
 					{
 						if ( pm->cmd.forwardmove >= 0 )
 						{
-							if(!PM_InDeathAnim())
+							if(!PM_InDeathAnim(pm->ps->legsAnim))
 							{
 								PM_SetAnim(pm,SETANIM_LEGS,BOTH_JUMP1,SETANIM_FLAG_OVERRIDE, 100);	// Only blend over 100ms
 							}
@@ -3107,7 +3106,7 @@ static void PM_GroundTraceMissed( void ) {
 						}
 						else if ( pm->cmd.forwardmove < 0 )
 						{
-							if(!PM_InDeathAnim())
+							if(!PM_InDeathAnim(pm->ps->legsAnim))
 							{
 								PM_SetAnim(pm,SETANIM_LEGS,BOTH_JUMPBACK1,SETANIM_FLAG_OVERRIDE, 100);	// Only blend over 100ms
 							}

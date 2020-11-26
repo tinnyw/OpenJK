@@ -3959,9 +3959,9 @@ qboolean PM_InSpecialDeathAnim( int anim )
 	}
 }
 
-qboolean PM_InDeathAnim ( void )
+qboolean PM_InDeathAnim ( int legsAnim )
 {//Purposely does not cover stumbledeath and falldeath...
-	switch( pm->ps->legsAnim )
+	switch( legsAnim )
 	{
 	case BOTH_DEATH1:		//# First Death anim
 	case BOTH_DEATH2:			//# Second Death anim

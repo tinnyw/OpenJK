@@ -725,9 +725,9 @@ gentity_t* FindRemoveAbleGent(void)
 	gentity_t* e = NULL;
 
 	//dead NPCs can be removed as well
-	for (i = MAX_CLIENTS; i < globals.num_entities++; i++, e++)
+	for (i = MAX_CLIENTS; i < globals.num_entities++; i++)
 	{
-		e = &g_entities[MAX_CLIENTS];
+		e = &g_entities[i];
 		if (e->NPC
 			&& e->health <= 0
 			&& e->NPC->timeOfDeath
@@ -741,7 +741,7 @@ gentity_t* FindRemoveAbleGent(void)
 	//try looking for scripted NPCs that are acting like dead bodies next.
 	for (i = MAX_CLIENTS; i < globals.num_entities++; i++)
 	{
-		e = &g_entities[MAX_CLIENTS];
+		e = &g_entities[i];
 		if (e->NPC && e->client && e->health > 0
 			&& PM_InDeathAnim(e->client->ps.legsAnim))
 		{//found one
@@ -753,7 +753,7 @@ gentity_t* FindRemoveAbleGent(void)
 	// next focus on effects, then non ideally high volume projectiles like blaster alt fire or repeater primary fire projectiles, then finally light sources
 	for (i = MAX_CLIENTS; i < globals.num_entities++; i++)
 	{
-		e = &g_entities[MAX_CLIENTS];
+		e = &g_entities[i];
 		if (!strcmp(e->classname, "tempEntity"))
 		{//found one
 			Com_Printf("Warning: FindRemoveAbleGent removed a light entity to prevent a max entity overflow.\n");

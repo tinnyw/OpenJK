@@ -3867,7 +3867,6 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 	{//in a knockdown
 		if ( !pm->ps->legsAnimTimer )
 		{
-			int blendTime = 300;
 			//done with the knockdown - FIXME: somehow this is allowing an *instant* getup...???
 			//FIXME: if trying to crouch (holding button?), just get up into a crouch?
 			if ( pm->cmd.upmove < 0 )
@@ -3933,7 +3932,6 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 						}
 						else
 						{
-							blendTime = 700;
 							anim = BOTH_GETUP_L;
 						}
 						break;
@@ -3945,7 +3943,6 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 						}
 						else
 						{
-							blendTime = 700;
 							anim = BOTH_GETUP_R;
 						}
 						break;
@@ -3986,7 +3983,7 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 						//launch off ground?
 						pm->ps->weaponTime = 300;//just to make sure it's cleared
 					}
-					PM_SetAnim( pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, blendTime);
+					PM_SetAnim( pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, 300);
 					pm->ps->saberMove = pm->ps->saberBounceMove = LS_READY;//don't finish whatever saber anim you may have been in
 					pm->ps->saberBlocked = BLOCKED_NONE;
 					return qtrue;

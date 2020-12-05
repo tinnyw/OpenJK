@@ -3665,6 +3665,10 @@ qboolean PM_InForceGetUp( playerState_t *ps )
 	case BOTH_FORCE_GETUP_B4:
 	case BOTH_FORCE_GETUP_B5:
 	case BOTH_FORCE_GETUP_B6:
+	case BOTH_FORCE_GETUP_L:
+	case BOTH_FORCE_GETUP_R:
+	case BOTH_FORCE_GETUP_L2:
+	case BOTH_FORCE_GETUP_R2:
 		if ( ps->legsAnimTimer )
 		{
 			return qtrue;
@@ -3683,6 +3687,8 @@ qboolean PM_InGetUp( playerState_t *ps )
 	case BOTH_GETUP3:
 	case BOTH_GETUP4:
 	case BOTH_GETUP5:
+	case BOTH_GETUP_L:
+	case BOTH_GETUP_R:
 	case BOTH_GETUP_CROUCH_F1:
 	case BOTH_GETUP_CROUCH_B1:
 		if ( ps->legsAnimTimer )
@@ -3860,7 +3866,9 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 		||legsAnim == BOTH_SHOOTDODGE_R)
 	{//in a knockdown
 		if ( !pm->ps->legsAnimTimer )
-		{//done with the knockdown - FIXME: somehow this is allowing an *instant* getup...???
+		{
+			int blendTime = 300;
+			//done with the knockdown - FIXME: somehow this is allowing an *instant* getup...???
 			//FIXME: if trying to crouch (holding button?), just get up into a crouch?
 			if ( pm->cmd.upmove < 0 )
 			{
@@ -3917,6 +3925,30 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 							anim = BOTH_GETUP3;
 						}
 						break;
+					case BOTH_SHOOTDODGE_L:
+						if ((pm->ps->clientNum && pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0) || (!pm->ps->clientNum && pm->cmd.upmove > 0 && pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1))
+						{
+							anim = Q_irand(BOTH_FORCE_GETUP_L, BOTH_FORCE_GETUP_L2);
+							forceGetUp = qtrue;
+						}
+						else
+						{
+							blendTime = 700;
+							anim = BOTH_GETUP_L;
+						}
+						break;
+					case BOTH_SHOOTDODGE_R:
+						if ((pm->ps->clientNum && pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0) || (!pm->ps->clientNum && pm->cmd.upmove > 0 && pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1))
+						{
+							anim = Q_irand(BOTH_FORCE_GETUP_R, BOTH_FORCE_GETUP_R2);
+							forceGetUp = qtrue;
+						}
+						else
+						{
+							blendTime = 700;
+							anim = BOTH_GETUP_R;
+						}
+						break;
 					case BOTH_KNOCKDOWN4:
 						if ( (pm->ps->clientNum&&pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0) || (!pm->ps->clientNum&&pm->cmd.upmove>0&&pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1) )
 						{
@@ -3954,7 +3986,7 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 						//launch off ground?
 						pm->ps->weaponTime = 300;//just to make sure it's cleared
 					}
-					PM_SetAnim( pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, 300 );
+					PM_SetAnim( pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, blendTime);
 					pm->ps->saberMove = pm->ps->saberBounceMove = LS_READY;//don't finish whatever saber anim you may have been in
 					pm->ps->saberBlocked = BLOCKED_NONE;
 					return qtrue;
@@ -8075,8 +8107,6 @@ static void PM_ShootDodge()
 
 	pm->ps->velocity[2] += JUMP_VELOCITY * 5 / 4; // start jumping
 
-	//G_Sound(pm->gent, G_SoundIndex("sound/weapons/force/push.wav"));
-	//G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/weapons/force/speed.wav");
 	G_SoundOnEnt(pm->gent, CHAN_VOICE, "sound/shoot_dodge/bassbullettime8db.mp3");
 
 	// set the anims - first the torso weapon anims

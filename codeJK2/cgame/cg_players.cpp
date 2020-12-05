@@ -2067,6 +2067,7 @@ Handles seperate torso motion
 extern int PM_TurnAnimForLegsAnim( gentity_t *gent, int anim );
 extern float PM_GetTimeScaleMod( gentity_t *gent );
 extern qboolean PM_InShootDodgeInAir(playerState_t* ps);
+extern qboolean PM_InGetUp(playerState_t* ps);
 void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 {
 	vec3_t		headAngles, neckAngles, chestAngles, thoracicAngles = {0,0,0};//legsAngles, torsoAngles,
@@ -2217,7 +2218,6 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 		}
 		else
 		{
-
 			//set the legs.yawing field so we play the turning anim when turning in place
 			if ( angles[YAW] == cent->pe.legs.yawAngle )
 			{
@@ -2232,7 +2232,23 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			{
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
-			if (PM_InShootDodge(&cent->gent->client->ps))
+			if (PM_InGetUp(&cent->gent->client->ps))
+			{
+				switch (cent->gent->client->ps.legsAnim)
+				{
+				case BOTH_GETUP_L:
+				case BOTH_FORCE_GETUP_L:
+				case BOTH_FORCE_GETUP_L2:
+					angles[YAW] = AngleNormalize180(viewAngles[YAW] + 90);
+					break;
+				case BOTH_GETUP_R:
+				case BOTH_FORCE_GETUP_R:
+				case BOTH_FORCE_GETUP_R2:
+					angles[YAW] = AngleNormalize180(viewAngles[YAW] - 90);
+					break;
+				}
+			}
+			else if (PM_InShootDodge(&cent->gent->client->ps))
 			{
 				vec3_t movDir, movAngles;
 				VectorNormalize2(cent->gent->client->ps.moveDir, movDir);

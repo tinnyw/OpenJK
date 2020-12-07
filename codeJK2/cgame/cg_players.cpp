@@ -2232,22 +2232,27 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			{
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
+			// if getting up face the direction you were moving
 			if (PM_InGetUp(&cent->gent->client->ps))
 			{
+				vec3_t movDir, movAngles;
+				VectorNormalize2(cent->gent->client->ps.moveDir, movDir);
+				vectoangles(movDir, movAngles);
 				switch (cent->gent->client->ps.legsAnim)
 				{
 				case BOTH_GETUP_L:
 				case BOTH_FORCE_GETUP_L:
 				case BOTH_FORCE_GETUP_L2:
-					angles[YAW] = AngleNormalize180(viewAngles[YAW] + 90);
+					angles[YAW] = AngleNormalize180(movAngles[YAW]);
 					break;
 				case BOTH_GETUP_R:
 				case BOTH_FORCE_GETUP_R:
 				case BOTH_FORCE_GETUP_R2:
-					angles[YAW] = AngleNormalize180(viewAngles[YAW] - 90);
+					angles[YAW] = AngleNormalize180(movAngles[YAW]);
 					break;
 				}
 			}
+			// when shoot dodging face direction you're moving
 			else if (PM_InShootDodge(&cent->gent->client->ps))
 			{
 				vec3_t movDir, movAngles;

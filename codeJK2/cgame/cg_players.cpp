@@ -2232,7 +2232,7 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			{
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
-			// if getting up face the direction you were moving
+			// if getting up from a shoot dodge face the direction you were moving
 			if (PM_InGetUp(&cent->gent->client->ps))
 			{
 				vec3_t movDir, movAngles;
@@ -2243,8 +2243,6 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 				case BOTH_GETUP_L:
 				case BOTH_FORCE_GETUP_L:
 				case BOTH_FORCE_GETUP_L2:
-					angles[YAW] = AngleNormalize180(movAngles[YAW]);
-					break;
 				case BOTH_GETUP_R:
 				case BOTH_FORCE_GETUP_R:
 				case BOTH_FORCE_GETUP_R2:

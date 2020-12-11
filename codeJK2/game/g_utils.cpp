@@ -749,6 +749,13 @@ gentity_t* FindRemoveAbleGent(void)
 			return e;
 		}
 
+		// flechette projectiles can be removed in a hurry just because they're so many of them it'll be hard to miss one
+		if (!strcmp(e->classname, "flech_proj"))
+		{//found one
+			debug_print("Warning: FindRemoveAbleGent removed a flechette projectile entity to prevent a max entity overflow.\n");
+			return e;
+		}
+
 		//dead NPCs can be removed as well
 		if (e->NPC
 			&& e->health <= 0

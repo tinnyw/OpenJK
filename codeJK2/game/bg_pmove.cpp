@@ -8162,13 +8162,6 @@ static void PM_Weapon( void )
 		return;
 	}
 
-
-	// if not in shoot dodge anymore set timescale back to 1
-	if (!PM_InShootDodgeInAir(pm->ps) && pm->ps->clientNum == 0) {
-		if (g_timescale->value < 1.0f)
-			g_timescale->value = 1.0;
-	}
-
 	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ))
 	{//in knockdown
 		if ( pm->ps->weaponTime > 0 ) {
@@ -8525,7 +8518,7 @@ static void PM_Weapon( void )
 			{//Special test for Matrix Mode (tm)
 				// if in shoot dodge raise rate of fire slightly
 				if (PM_InShootDodgeInAir(pm->ps)) {
-					addTime *= g_timescale->value * 3.2f;
+					addTime *= SHOOT_DODGE_FIRE_RATE_REDUCTION;
 				}
 
 				if ( pm->ps->clientNum == 0 && !player_locked && pm->ps->forcePowersActive&(1<<FP_SPEED) )
@@ -8777,6 +8770,12 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 			return;
 		}
+	}
+
+	// if not in shoot dodge anymore set timescale back to 1 and stop shoot dodge
+	if (!PM_InShootDodgeInAir(pm->ps) && pm->ps->clientNum == 0) {
+		if (g_timescale->value < 1.0f)
+			g_timescale->value = 1.0;
 	}
 
 	// disruptor alt-fire should toggle the zoom mode, but only bother doing this for the player?

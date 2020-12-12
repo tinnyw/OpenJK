@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "w_local.h"
 #include "g_functions.h"
+#include "b_shootdodge.h"
 
 //-------------------
 //	DEMP2
@@ -204,7 +205,12 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 	VectorCopy( wpMuzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
-	count = ( level.time - ent->client->ps.weaponChargeTime ) / DEMP2_CHARGE_UNIT;
+	float shootDodgeDempChargeReductionModifier = 1.0f;
+
+	if (PM_InShootDodgeInAir(&ent->client->ps))
+		shootDodgeDempChargeReductionModifier = SHOOT_DODGE_DEMP_CHARGE_REDUCTION;
+
+	count = ( level.time - ent->client->ps.weaponChargeTime ) / (DEMP2_CHARGE_UNIT * shootDodgeDempChargeReductionModifier);
 
 	if ( count < 1 )
 	{

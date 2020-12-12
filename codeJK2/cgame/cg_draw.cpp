@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../game/g_local.h"
 #include "../game/b_local.h"
+#include "../game/b_shootdodge.h"
 #include "cg_local.h"
 #include "cg_media.h"
 #include "../game/objectives.h"
@@ -1124,8 +1125,13 @@ static void CG_DrawZoomMask( void )
 		{
 			cgi_R_SetColor( colorTable[CT_WHITE] );
 
+			float shootDodgeTenlossChargeReductionModifier = 10.0f;
+
+			if (PM_InShootDodgeInAir(&cg_entities[0].gent->client->ps))
+				shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
+
 			// draw the charge level
-			max = ( cg.time - cg_entities[0].gent->client->ps.weaponChargeTime ) / ( 150.0f * 10.0f ); // bad hardcodedness 150 is disruptor charge unit and 10 is max charge units allowed.
+			max = ( cg.time - cg_entities[0].gent->client->ps.weaponChargeTime ) / ( 150.0f * shootDodgeTenlossChargeReductionModifier); // bad hardcodedness 150 is disruptor charge unit and 10 is max charge units allowed.
 
 			if ( max > 1.0f )
 			{

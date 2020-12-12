@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "w_local.h"
 #include "g_functions.h"
+#include "b_shootdodge.h"
 
 //---------------------
 //	Tenloss Disruptor
@@ -203,8 +204,13 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		VectorCopy( ent->client->renderInfo.eyePoint, start );
 		AngleVectors( ent->client->renderInfo.eyeAngles, wpFwd, NULL, NULL );
 
+		float shootDodgeTenlossChargeReductionModifier = 1.0f;
+
+		if (PM_InShootDodgeInAir(&ent->client->ps))
+			shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
+
 		// don't let NPC's do charging
-		int count = ( level.time - ent->client->ps.weaponChargeTime - 50 ) / DISRUPTOR_CHARGE_UNIT;
+		int count = ( level.time - ent->client->ps.weaponChargeTime - 50 ) / ( DISRUPTOR_CHARGE_UNIT * shootDodgeTenlossChargeReductionModifier);
 
 		if ( count < 1 )
 		{

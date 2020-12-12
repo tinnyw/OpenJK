@@ -7939,10 +7939,10 @@ static int PM_DoChargingAmmoUsage( int *amount )
 					count = 1;
 				}
 
-				float shootDodgeBryarReductionModifier = 1.0f;
+				float shootDodgeBryarChargeReductionModifier = 1.0f;
 
 				if (PM_InShootDodgeInAir(pm->ps))
-					shootDodgeBryarReductionModifier = SHOOT_DODGE_BRYAR_CHARGE_REDUCTION;
+					shootDodgeBryarChargeReductionModifier = SHOOT_DODGE_BRYAR_CHARGE_REDUCTION;
 
 				// now get a real chargeTime so the duplicated code in g_weapon doesn't get freaked
 				pm->ps->weaponChargeTime = level.time - ( count * BRYAR_CHARGE_UNIT * shootDodgeBryarReductionModifier );
@@ -7982,8 +7982,13 @@ static int PM_DoChargingAmmoUsage( int *amount )
 					count = 1;
 				}
 
+				float shootDodgeDempChargeReductionModifier = 1.0f;
+
+				if (PM_InShootDodgeInAir(pm->ps))
+					shootDodgeDempChargeReductionModifier = SHOOT_DODGE_DEMP_CHARGE_REDUCTION;
+
 				// now get a real chargeTime so the duplicated code in g_weapon doesn't get freaked
-				pm->ps->weaponChargeTime = level.time - ( count * DEMP2_CHARGE_UNIT );
+				pm->ps->weaponChargeTime = level.time - ( count * DEMP2_CHARGE_UNIT * shootDodgeDempChargeReductionModifier);
 			}
 		}
 
@@ -7998,8 +8003,13 @@ static int PM_DoChargingAmmoUsage( int *amount )
 	}
 	else if ( pm->ps->weapon == WP_DISRUPTOR && pm->cmd.buttons & BUTTON_ALT_ATTACK ) // BUTTON_ATTACK will have been mapped to BUTTON_ALT_ATTACK if we are zoomed
 	{
+		float shootDodgeTenlossChargeReductionModifier = 1.0f;
+
+		if (PM_InShootDodgeInAir(pm->ps))
+			shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
+
 		// this code is duplicated ( I know, I know ) in G_weapon.cpp for the disruptor alt-fire
-		count = ( level.time - pm->ps->weaponChargeTime ) / DISRUPTOR_CHARGE_UNIT;
+		count = ( level.time - pm->ps->weaponChargeTime ) / (DISRUPTOR_CHARGE_UNIT * shootDodgeTenlossChargeReductionModifier);
 
 		if ( count < 1 )
 		{
@@ -8027,7 +8037,7 @@ static int PM_DoChargingAmmoUsage( int *amount )
 				}
 
 				// now get a real chargeTime so the duplicated code in g_weapon doesn't get freaked
-				pm->ps->weaponChargeTime = level.time - ( count * DISRUPTOR_CHARGE_UNIT );
+				pm->ps->weaponChargeTime = level.time - ( count * DISRUPTOR_CHARGE_UNIT * shootDodgeTenlossChargeReductionModifier );
 			}
 		}
 
@@ -8129,6 +8139,12 @@ static void PM_ShootDodge()
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_R, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 		
 	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in direction facing
+}
+
+static void PM_StopShootDodge()
+{
+	if (g_timescale->value < 1.0f)
+		g_timescale->value = 1.0;
 }
 
 /*
@@ -8774,8 +8790,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 	// if not in shoot dodge anymore set timescale back to 1 and stop shoot dodge
 	if (!PM_InShootDodgeInAir(pm->ps) && pm->ps->clientNum == 0) {
-		if (g_timescale->value < 1.0f)
-			g_timescale->value = 1.0;
+		PM_StopShootDodge();
 	}
 
 	// disruptor alt-fire should toggle the zoom mode, but only bother doing this for the player?

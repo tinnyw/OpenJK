@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/wp_saber.h"
 #include "../game/anims.h"
 #include "../game/g_functions.h"
+#include "../game/b_shootdodge.h"
 
 #define MASK_CAMERACLIP (MASK_SOLID)
 #define CAMERA_SIZE	4
@@ -1407,8 +1408,13 @@ static qboolean	CG_CalcFov( void ) {
 				}
 				else
 				{
+					float shootDodgeTenlossChargeReductionModifier = 1.0f;
+
+					if (PM_InShootDodgeInAir(&cg_entities[0].gent->client->ps))
+						shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
+
 					// disruptor zooming in faster
-					cg_zoomFov -= cg.frametime * 0.075f;
+					cg_zoomFov -= (cg.frametime * 0.075f * shootDodgeTenlossChargeReductionModifier);
 				}
 
 				// Clamp zoomFov

@@ -8934,6 +8934,20 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	}
 }
 
+static void PM_ShootDodgeAngles(playerState_t* ps, pml_t* pml)
+{
+	if (!ps || !PM_InShootDodgeInAir(ps))
+		return;
+
+	vec3_t movAngles;
+	float viewMovDiffYaw, viewMovDiffPitch;
+
+	// get angles for 
+	vectoangles(ps->moveDir, movAngles);
+	viewMovDiffYaw = AngleNormalize180(ps->viewangles[YAW] - movAngles[YAW]);
+	Com_Printf("Move yaw is %f and view yaw is %f\n", movAngles[YAW], ps->viewangles[YAW]);
+}
+
 /*
 ================
 Pmove
@@ -9158,6 +9172,9 @@ void Pmove( pmove_t *pmove )
 		PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
 		PM_SetWaterHeight();
 	}
+
+	// adjust angles and anims for shoot dodging while in air
+	PM_ShootDodgeAngles(pm->ps, &pml);
 
 	PM_Inventory();
 

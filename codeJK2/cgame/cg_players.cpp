@@ -2270,6 +2270,8 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 				default:
 					angles[YAW] = AngleNormalize180(movAngles[YAW]);
 				}
+
+				// angles[ROLL] = AngleNormalize180(cent->gent->client->ps.viewangles[YAW] - movAngles[YAW];
 			}
 			else if ( cent->gent->client->ps.eFlags & EF_FORCE_GRIPPED && cent->gent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 			{

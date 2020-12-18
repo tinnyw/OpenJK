@@ -8934,18 +8934,84 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	}
 }
 
-static void PM_ShootDodgeAngles(playerState_t* ps, pml_t* pml)
+static void PM_SetShootDodgeAnimationInAir(pmove_t* pm, int anim)
 {
-	if (!ps || !PM_InShootDodgeInAir(ps))
+	int currentLegsAnimTime = pm->ps->legsAnimTimer;
+
+	PM_SetLegsAnimTimer(pm->gent, &pm->ps->legsAnimTimer, currentLegsAnimTime);
+	gentity_t* gent = &g_entities[pm->ps->clientNum];
+
+	//PM_SetAnim(pm, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 100);
+	PM_SetAnimFinal(&pm->ps->torsoAnim, &pm->ps->legsAnim, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, &pm->ps->torsoAnimTimer, &pm->ps->legsAnimTimer, &g_entities[pm->ps->clientNum], 100);//was pm->gent
+
+#if 0
+	int anim = BOTH_SHOOTDODGE_R;
+	animation_t* animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
+	int firstFrame = animations[anim].firstFrame;
+	int lastFrame = (animations[anim].numFrames) + firstFrame;
+	if (firstFrame > lastFrame)
+		firstFrame = lastFrame;
+	int			actualTime = (cg.time ? cg.time : level.time);
+
+	float	currentFrame, legAnimSpeed;
+	int		flags = BONE_ANIM_OVERRIDE | BONE_ANIM_BLEND;
+
+	qboolean animatingLegs = gi.G2API_GetBoneAnimIndex(&gent->ghoul2[gent->playerModel],
+		gent->rootBone, actualTime, &currentFrame,
+		&firstFrame, &lastFrame, &flags, &legAnimSpeed, NULL);
+	/*qboolean animatingLegs = gi.G2API_GetBoneAnimIndex(&gent->ghoul2[gent->playerModel],
+		gent->rootBone, actualTime, &currentFrame,
+		&firstFrame, &lastFrame, &flags, &legAnimSpeed, NULL);*/
+
+	gi.G2API_SetBoneAnimIndex(&gent->ghoul2[gent->playerModel], gent->rootBone, //gent->upperLumbarBone
+		firstFrame, lastFrame, flags, legAnimSpeed,
+		actualTime, currentFrame, 200);
+#endif
+}
+
+static void PM_ShootDodgeAngles(pmove_t* pm)
+{
+	if (!pm || !pm->ps || !PM_InShootDodgeInAir(pm->ps))
 		return;
 
 	vec3_t movAngles;
 	float viewMovDiffYaw, viewMovDiffPitch;
 
-	// get angles for 
-	vectoangles(ps->moveDir, movAngles);
-	viewMovDiffYaw = AngleNormalize180(ps->viewangles[YAW] - movAngles[YAW]);
-	Com_Printf("Move yaw is %f and view yaw is %f\n", movAngles[YAW], ps->viewangles[YAW]);
+	// get angles for the shoot dodge direction
+	vectoangles(pm->ps->moveDir, movAngles);
+	// and now get the delta between where you're aiming and where you're dodging to
+	viewMovDiffYaw = AngleNormalize180(pm->ps->viewangles[YAW] - movAngles[YAW]);
+	Com_Printf("Move yaw: %f, view yaw: %f, legsTimer: %d, diff: %f\n", movAngles[YAW], pm->ps->viewangles[YAW], pm->ps->legsAnimTimer, viewMovDiffYaw);
+
+	switch (pm->ps->legsAnim)
+	{
+	case BOTH_SHOOTDODGE_F:
+		if (viewMovDiffYaw > 40.0f)
+			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_R);
+		else if (viewMovDiffYaw < -40.0f)
+			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_L);
+		break;
+	case BOTH_SHOOTDODGE_B:
+		if (viewMovDiffYaw > 40.0f)
+			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_L);
+		else if (viewMovDiffYaw < -40.0f)
+			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_R);
+		break;
+	case BOTH_SHOOTDODGE_L:
+		if (viewMovDiffYaw < -50.0f)
+			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_F);
+		else if (viewMovDiffYaw > 50.0f)
+			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_B);
+		break;
+	case BOTH_SHOOTDODGE_R:
+		if (viewMovDiffYaw < 50.0f)
+			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_F);
+		else if (viewMovDiffYaw > -50.0f)
+			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_B);
+		break;
+	default:
+		break;
+	}
 }
 
 /*
@@ -9174,7 +9240,7 @@ void Pmove( pmove_t *pmove )
 	}
 
 	// adjust angles and anims for shoot dodging while in air
-	PM_ShootDodgeAngles(pm->ps, &pml);
+	PM_ShootDodgeAngles(pm);
 
 	PM_Inventory();
 

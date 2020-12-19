@@ -2256,7 +2256,8 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 				vec3_t movDir, movAngles;
 				VectorNormalize2(cent->gent->client->ps.moveDir, movDir);
 				vectoangles(movDir, movAngles);
-				switch (cent->gent->client->ps.legsAnim)
+				// todo: get this part to smooth out between the animations
+				/*switch (cent->gent->client->ps.legsAnim)
 				{
 				case BOTH_SHOOTDODGE_B:
 					angles[YAW] = AngleNormalize180(movAngles[YAW] + 180);
@@ -2269,7 +2270,7 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 					break;
 				default:
 					angles[YAW] = AngleNormalize180(movAngles[YAW]);
-				}
+				}*/
 
 				// angles[ROLL] = AngleNormalize180(cent->gent->client->ps.viewangles[YAW] - movAngles[YAW];
 			}

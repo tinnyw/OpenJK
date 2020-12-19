@@ -8942,7 +8942,8 @@ static void PM_SetShootDodgeAnimationInAir(pmove_t* pm, int anim)
 	gentity_t* gent = &g_entities[pm->ps->clientNum];
 
 	//PM_SetAnim(pm, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 100);
-	PM_SetAnimFinal(&pm->ps->torsoAnim, &pm->ps->legsAnim, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, &pm->ps->torsoAnimTimer, &pm->ps->legsAnimTimer, &g_entities[pm->ps->clientNum], 100);//was pm->gent
+	// change blend time back to 500
+	PM_SetAnimFinal(&pm->ps->torsoAnim, &pm->ps->legsAnim, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, &pm->ps->torsoAnimTimer, &pm->ps->legsAnimTimer, &g_entities[pm->ps->clientNum], 50/*0*/);//was pm->gent
 
 #if 0
 	int anim = BOTH_SHOOTDODGE_R;
@@ -8986,27 +8987,27 @@ static void PM_ShootDodgeAngles(pmove_t* pm)
 	switch (pm->ps->legsAnim)
 	{
 	case BOTH_SHOOTDODGE_F:
-		if (viewMovDiffYaw > 40.0f)
+		if (viewMovDiffYaw > 45.0f)
 			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_R);
-		else if (viewMovDiffYaw < -40.0f)
+		else if (viewMovDiffYaw < -45.0f)
 			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_L);
 		break;
 	case BOTH_SHOOTDODGE_B:
-		if (viewMovDiffYaw > 40.0f)
+		if (viewMovDiffYaw < 0 && viewMovDiffYaw > -135.0f )
 			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_L);
-		else if (viewMovDiffYaw < -40.0f)
+		else if (viewMovDiffYaw > 0 && viewMovDiffYaw < 135.0f)
 			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_R);
 		break;
 	case BOTH_SHOOTDODGE_L:
-		if (viewMovDiffYaw < -50.0f)
+		if (viewMovDiffYaw > -45.0f)
 			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_F);
-		else if (viewMovDiffYaw > 50.0f)
+		else if (viewMovDiffYaw < -135.0f)
 			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_B);
 		break;
 	case BOTH_SHOOTDODGE_R:
-		if (viewMovDiffYaw < 50.0f)
+		if (viewMovDiffYaw < 45.0f)
 			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_F);
-		else if (viewMovDiffYaw > -50.0f)
+		else if (viewMovDiffYaw > 135.0f)
 			PM_SetShootDodgeAnimationInAir(pm, BOTH_SHOOTDODGE_B);
 		break;
 	default:

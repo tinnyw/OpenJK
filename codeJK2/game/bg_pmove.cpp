@@ -8941,9 +8941,12 @@ static void PM_SetShootDodgeAnimationInAir(pmove_t* pm, int anim)
 	PM_SetLegsAnimTimer(pm->gent, &pm->ps->legsAnimTimer, currentLegsAnimTime);
 	gentity_t* gent = &g_entities[pm->ps->clientNum];
 
+	//pm->ps->
+
 	//PM_SetAnim(pm, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 100);
 	// change blend time back to 500
-	PM_SetAnimFinal(&pm->ps->torsoAnim, &pm->ps->legsAnim, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, &pm->ps->torsoAnimTimer, &pm->ps->legsAnimTimer, &g_entities[pm->ps->clientNum], 50/*0*/);//was pm->gent
+	PM_SetAnimFinal(&pm->ps->torsoAnim, &pm->ps->legsAnim, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, &pm->ps->torsoAnimTimer, 
+		&pm->ps->legsAnimTimer, &g_entities[pm->ps->clientNum], SHOOT_DODGE_ANIMATION_BLEND_TIME);
 
 #if 0
 	int anim = BOTH_SHOOTDODGE_R;
@@ -8982,7 +8985,7 @@ static void PM_ShootDodgeAngles(pmove_t* pm)
 	vectoangles(pm->ps->moveDir, movAngles);
 	// and now get the delta between where you're aiming and where you're dodging to
 	viewMovDiffYaw = AngleNormalize180(pm->ps->viewangles[YAW] - movAngles[YAW]);
-	Com_Printf("Move yaw: %f, view yaw: %f, legsTimer: %d, diff: %f\n", movAngles[YAW], pm->ps->viewangles[YAW], pm->ps->legsAnimTimer, viewMovDiffYaw);
+	//Com_Printf("Move yaw: %f, view yaw: %f, legsTimer: %d, diff: %f\n", movAngles[YAW], pm->ps->viewangles[YAW], pm->ps->legsAnimTimer, viewMovDiffYaw);
 
 	switch (pm->ps->legsAnim)
 	{

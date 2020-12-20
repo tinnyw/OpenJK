@@ -2232,6 +2232,18 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			{
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
+
+			static qboolean havePreviousShootDodgeAngle = qfalse;
+			static float previousShootDodgeAngle = 0;
+			static int previousShootDodgeAngleTime = 0;
+
+			if (!PM_InShootDodge(&cent->gent->client->ps))
+			{
+				havePreviousShootDodgeAngle = qfalse;
+				previousShootDodgeAngle = 0;
+				previousShootDodgeAngleTime = 0;
+			}
+
 			// if getting up from a shoot dodge face the direction you were moving
 			if (PM_InGetUp(&cent->gent->client->ps))
 			{
@@ -2256,23 +2268,40 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 				vec3_t movDir, movAngles;
 				VectorNormalize2(cent->gent->client->ps.moveDir, movDir);
 				vectoangles(movDir, movAngles);
-				// todo: get this part to smooth out between the animations
-				/*switch (cent->gent->client->ps.legsAnim)
+
+				float desiredShootDodgeYawAngle;
+
+				switch (cent->gent->client->ps.legsAnim)
 				{
 				case BOTH_SHOOTDODGE_B:
-					angles[YAW] = AngleNormalize180(movAngles[YAW] + 180);
+					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW] + 180);
 					break;
 				case BOTH_SHOOTDODGE_L:
-					angles[YAW] = AngleNormalize180(movAngles[YAW] - 90);
+					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW] - 90);
 					break;
 				case BOTH_SHOOTDODGE_R:
-					angles[YAW] = AngleNormalize180(movAngles[YAW] + 90);
+					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW] + 90);
 					break;
 				default:
-					angles[YAW] = AngleNormalize180(movAngles[YAW]);
-				}*/
+					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW]);
+				}
 
-				// angles[ROLL] = AngleNormalize180(cent->gent->client->ps.viewangles[YAW] - movAngles[YAW];
+				if (havePreviousShootDodgeAngle)
+				{
+					if (AngleNormalize180(desiredShootDodgeYawAngle - previousShootDodgeAngle) > 0) 
+						angles[YAW] = previousShootDodgeAngle +  (90.0f / SHOOT_DODGE_CLIENT_TURN_TIME) * (cg.time - previousShootDodgeAngleTime);
+					else
+						angles[YAW] = previousShootDodgeAngle - (90.0f / SHOOT_DODGE_CLIENT_TURN_TIME) * (cg.time - previousShootDodgeAngleTime);
+					previousShootDodgeAngle = angles[YAW];
+				}
+				else
+				{
+					angles[YAW] = desiredShootDodgeYawAngle;
+					previousShootDodgeAngle = desiredShootDodgeYawAngle;
+				}
+
+				havePreviousShootDodgeAngle = qtrue;
+				previousShootDodgeAngleTime = cg.time;
 			}
 			else if ( cent->gent->client->ps.eFlags & EF_FORCE_GRIPPED && cent->gent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 			{

@@ -8092,6 +8092,7 @@ static qboolean PM_CanShootDodge()
 		!PM_InKnockDownOnGround(pm->ps) && // if you're not in a getup animation
 		!PM_InRoll(pm->ps) && // if you're not in a getup animation
 		!PM_InShootDodge(pm->ps) && // if you're not in a shootdodge already
+		!(pm->ps->pm_flags & PMF_DUCKED) && // not ducking
 		pm->ps->groundEntityNum != ENTITYNUM_NONE && // if you're standing on something
 		pm->ps->clientNum == 0 && // only the player can shootdodge
 		cg.renderingThirdPerson && // right now only initiate from third person

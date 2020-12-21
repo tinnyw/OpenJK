@@ -2237,7 +2237,7 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			static float previousShootDodgeAngle = 0;
 			static int previousShootDodgeAngleTime = 0;
 
-			if (!PM_InShootDodge(&cent->gent->client->ps))
+			if (cent->gent->client->ps.clientNum == 0 && !PM_InShootDodge(&cent->gent->client->ps))
 			{
 				havePreviousShootDodgeAngle = qfalse;
 				previousShootDodgeAngle = 0;

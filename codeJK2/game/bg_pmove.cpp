@@ -8117,6 +8117,9 @@ static qboolean PM_CanShootDodge()
 	if (PM_InKnockDown(pm->ps) || PM_InKnockDownOnGround(pm->ps) || PM_InRoll(pm->ps) || (pm->ps->pm_flags & PMF_DUCKED) || PM_InShootDodge(pm->ps))
 		return qfalse;
 
+	if (pm->ps->forcePowersActive & (1 << FP_SPEED)) // currently don't support starting shoot dodge when in force speed
+		return qfalse;
+
 	// shoot dodge from a wall run if pressing opposite direction button
 	if ((pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP) && pm->cmd.rightmove > 0)
 		return qtrue;
@@ -8142,7 +8145,7 @@ static void PM_ShootDodge()
 	{
 		shootDodgeSpeed = 100.0f;
 		// figure out how to convert pml.right to right dir vec
-		AngleVectors(pm->ps->viewangles, NULL, curDir, NULL);
+		AngleVectors(cg.refdefViewAngles, NULL, curDir, NULL);
 		VectorNormalize2(curDir, curDir);
 		if (pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP)
 			VectorScale(curDir, -1, curDir);
@@ -8184,7 +8187,7 @@ static void PM_ShootDodge()
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_F, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 	else if (pm->cmd.forwardmove < 0 && !PM_IsWallRunAnimation(pm->ps->legsAnim))
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_B, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
-	else if (pm->cmd.rightmove < 0 && !(pm->ps->legsAnim == BOTH_WALL_RUN_LEFT || pm->ps->legsAnim == BOTH_WALL_RUN_LEFT_STOP))
+	else if (pm->cmd.rightmove < 0 || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP)
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_L, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 	else
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_R, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
@@ -9037,7 +9040,7 @@ static void PM_ShootDodgeAngles(pmove_t* pm)
 	// get angles for the shoot dodge direction
 	vectoangles(pm->ps->moveDir, movAngles);
 	// and now get the delta between where you're aiming and where you're dodging to
-	viewMovDiffYaw = AngleNormalize180(pm->ps->viewangles[YAW] - movAngles[YAW]);
+	viewMovDiffYaw = AngleNormalize180(cg.refdefViewAngles[YAW] - movAngles[YAW]);
 	//Com_Printf("Move yaw: %f, view yaw: %f, legsTimer: %d, diff: %f\n", movAngles[YAW], pm->ps->viewangles[YAW], pm->ps->legsAnimTimer, viewMovDiffYaw);
 
 	switch (pm->ps->legsAnim)

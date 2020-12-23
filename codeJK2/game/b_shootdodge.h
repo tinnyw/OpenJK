@@ -12,14 +12,14 @@ extern qboolean PM_IsShootdodgeWeapon(int weapon);
 
 
 // SHOOT DODGE GENERAL
-#define SHOOT_DODGE_TIME_DILATION .07f
+#define SHOOT_DODGE_TIME_DILATION .1f//.07f
 #define SHOOT_DODGE_FIRE_RATE_REDUCTION .4f
 #define SHOOT_DODGE_PROJECTILE_SPEED_MULTIPLIER 1.7f
 
 // SHOOT DODGE ANIMATIONS
 #define SHOOT_DODGE_ANIMATION_BLEND_TIME 200
 // rate at which to turn into one shoot dodge animation to another instead of being strictly 90 off and robotic
-#define SHOOT_DODGE_CLIENT_TURN_RATE (90.0f / 200.0f)
+#define SHOOT_DODGE_CLIENT_TURN_RATE (90.0f / 500.0f)
 
 
 // WP_BRYAR_PISTOL

@@ -2289,8 +2289,8 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW]);
 				}
 
-				// when in the air and turning, turn at a rate so movements don't look robotic
-				if (havePreviousShootDodgeAngle && PM_InShootDodgeInAir(&cent->gent->client->ps))
+				// when in the air and turning, turn at a rate so movements don't look robotic, also if it's less than 2 degrees, clamp so it doesn't jitter
+				if (havePreviousShootDodgeAngle && PM_InShootDodgeInAir(&cent->gent->client->ps) && AngleNormalize180(desiredShootDodgeYawAngle - previousShootDodgeAngle) > 2.0f)
 				{
 					if (AngleNormalize180(desiredShootDodgeYawAngle - previousShootDodgeAngle) > 0) 
 						angles[YAW] = previousShootDodgeAngle + SHOOT_DODGE_CLIENT_TURN_RATE * (cg.time - previousShootDodgeAngleTime);

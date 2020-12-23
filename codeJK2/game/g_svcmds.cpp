@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "g_icarus.h"
 #include "wp_saber.h"
+#include "b_shootdodge.h"
 
 extern void Q3_SetViewEntity(int entID, const char *name);
 extern qboolean G_ClearViewEntity( gentity_t *ent );
@@ -302,6 +303,14 @@ void Svcmd_SaberAttackCycle_f( void )
 	}
 
 	gentity_t *self = G_GetSelfForPlayerCmd();
+
+	// if using saber cycle with a shoot dodge weapon toggle whether or not shoot dodge should be activated
+	if (PM_IsShootdodgeWeapon(self->s.weapon))
+	{
+		self->client->ps.ping = ~self->client->ps.ping;
+		return;
+	}
+
 	if ( self->s.weapon != WP_SABER )
 	{
 		return;

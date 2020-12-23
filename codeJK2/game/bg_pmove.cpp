@@ -8067,6 +8067,19 @@ qboolean PM_DroidMelee( int npc_class )
 	return qfalse;
 }
 
+qboolean PM_IsWallRunAnimation(int anim)
+{
+	switch (anim)
+	{
+	case BOTH_WALL_RUN_LEFT:
+	case BOTH_WALL_RUN_LEFT_STOP:
+	case BOTH_WALL_RUN_RIGHT:
+	case BOTH_WALL_RUN_RIGHT_STOP:
+		return qtrue;
+	}
+	return qfalse;
+}
+
 qboolean PM_IsShootdodgeWeapon(int weapon)
 {
 	switch (weapon) {
@@ -8086,30 +8099,59 @@ qboolean PM_IsShootdodgeWeapon(int weapon)
 
 static qboolean PM_CanShootDodge()
 {
-	if (PM_IsShootdodgeWeapon(pm->ps->weapon) && // if you're holding a normal ranged weapon
-		(pm->cmd.buttons & BUTTON_ALT_ATTACK) && // if you're holding alt attack
-		!PM_InKnockDown(pm->ps) && // if you're not in a knockdown
-		!PM_InKnockDownOnGround(pm->ps) && // if you're not in a getup animation
-		!PM_InRoll(pm->ps) && // if you're not in a getup animation
-		!PM_InShootDodge(pm->ps) && // if you're not in a shootdodge already
-		!(pm->ps->pm_flags & PMF_DUCKED) && // not ducking
-		pm->ps->groundEntityNum != ENTITYNUM_NONE && // if you're standing on something
-		pm->ps->clientNum == 0 && // only the player can shootdodge
-		cg.renderingThirdPerson && // right now only initiate from third person
-		// !(pm->ps->eFlags & EF_ALT_FIRING) && // not already firing
-		(pm->cmd.forwardmove != 0 || pm->cmd.rightmove != 0)) // must be attempting to move
-	{
+	if (!PM_IsShootdodgeWeapon(pm->ps->weapon))
+		return qfalse;
+
+	if (pm->ps->clientNum != 0) // must be player
+		return qfalse;
+
+	if (!(pm->cmd.buttons & BUTTON_ALT_ATTACK))
+		return qfalse;
+
+	if (pm->ps->ping) // have shoot dodge toggled off
+		return qfalse;
+
+	if (!cg.renderingThirdPerson) // right now only supporting third person
+		return qfalse;
+
+	if (PM_InKnockDown(pm->ps) || PM_InKnockDownOnGround(pm->ps) || PM_InRoll(pm->ps) || (pm->ps->pm_flags & PMF_DUCKED) || PM_InShootDodge(pm->ps))
+		return qfalse;
+
+	// shoot dodge from a wall run if pressing opposite direction button
+	if ((pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP) && pm->cmd.rightmove > 0)
 		return qtrue;
-	}
-	return qfalse;
+
+	if ((pm->ps->legsAnim == BOTH_WALL_RUN_LEFT || pm->ps->legsAnim == BOTH_WALL_RUN_LEFT_STOP) && pm->cmd.rightmove < 0)
+		return qtrue;
+
+	if (pm->ps->groundEntityNum == ENTITYNUM_NONE && pm->ps->forcePowerLevel[FP_LEVITATION] < FORCE_LEVEL_3) // must start from ground, unless jump level 3+
+		return qfalse;
+
+	if (!pm->cmd.forwardmove && !pm->cmd.rightmove) // must be trying to move
+		return qfalse;
+
+	return qtrue;
 }
 
 static void PM_ShootDodge()
 {
 	vec3_t curDir;
 	float shootDodgeSpeed;
-	shootDodgeSpeed = VectorNormalize2(pm->ps->velocity, curDir) / 7.0f;
-	VectorCopy(curDir, pm->ps->moveDir);
+
+	if (PM_IsWallRunAnimation(pm->ps->legsAnim))
+	{
+		shootDodgeSpeed = 100.0f;
+		// figure out how to convert pml.right to right dir vec
+		AngleVectors(pm->ps->viewangles, NULL, curDir, NULL);
+		VectorNormalize2(curDir, curDir);
+		if (pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP)
+			VectorScale(curDir, -1, curDir);
+	}
+	else
+	{
+		shootDodgeSpeed = VectorNormalize2(pm->ps->velocity, curDir) / 7.0f;
+		VectorCopy(curDir, pm->ps->moveDir);
+	}
 	
 	g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
 
@@ -8129,15 +8171,25 @@ static void PM_ShootDodge()
 		break;
 	}
 
+	Com_Printf("Wall run animation is: %d\n", pm->ps->legsAnim);
+
+	//918 wall run left -> BOTH_WALL_RUN_LEFT
+	// 931 what's back
+
+	//915 wall run right -> BOTH_WALL_RUN_RIGHT
+	// 931 what's back
+
 	// now the lower body anims
-	if (pm->cmd.forwardmove > 0)
+	if (pm->cmd.forwardmove > 0 && !PM_IsWallRunAnimation(pm->ps->legsAnim))
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_F, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
-	else if (pm->cmd.forwardmove < 0)
+	else if (pm->cmd.forwardmove < 0 && !PM_IsWallRunAnimation(pm->ps->legsAnim))
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_B, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
-	else if (pm->cmd.rightmove < 0)
+	else if (pm->cmd.rightmove < 0 && !(pm->ps->legsAnim == BOTH_WALL_RUN_LEFT || pm->ps->legsAnim == BOTH_WALL_RUN_LEFT_STOP))
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_L, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 	else
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_R, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+
+	Com_Printf("Shoot dodge animation is: %d and right move is %f and button is %d\n", pm->ps->legsAnim, pm->cmd.rightmove, pm->cmd.buttons);
 		
 	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in direction facing
 }

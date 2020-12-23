@@ -2233,10 +2233,12 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
 
+			// create storage variables for maintining state of shoot dodge angles between frames
 			static qboolean havePreviousShootDodgeAngle = qfalse;
 			static float previousShootDodgeAngle = 0;
 			static int previousShootDodgeAngleTime = 0;
 
+			// clear it out when not in shoot dodge anymore
 			if (cent->gent->client->ps.clientNum == 0 && !PM_InShootDodge(&cent->gent->client->ps))
 			{
 				havePreviousShootDodgeAngle = qfalse;
@@ -2271,6 +2273,7 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 
 				float desiredShootDodgeYawAngle;
 
+				// set angle of which way you're trying to face based on shoot dodge animation
 				switch (cent->gent->client->ps.legsAnim)
 				{
 				case BOTH_SHOOTDODGE_B:
@@ -2286,20 +2289,18 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW]);
 				}
 
-				if (havePreviousShootDodgeAngle)
+				// when in the air and turning, turn at a rate so movements don't look robotic
+				if (havePreviousShootDodgeAngle && PM_InShootDodgeInAir(&cent->gent->client->ps))
 				{
 					if (AngleNormalize180(desiredShootDodgeYawAngle - previousShootDodgeAngle) > 0) 
-						angles[YAW] = previousShootDodgeAngle +  (90.0f / SHOOT_DODGE_CLIENT_TURN_TIME) * (cg.time - previousShootDodgeAngleTime);
+						angles[YAW] = previousShootDodgeAngle + SHOOT_DODGE_CLIENT_TURN_RATE * (cg.time - previousShootDodgeAngleTime);
 					else
-						angles[YAW] = previousShootDodgeAngle - (90.0f / SHOOT_DODGE_CLIENT_TURN_TIME) * (cg.time - previousShootDodgeAngleTime);
-					previousShootDodgeAngle = angles[YAW];
+						angles[YAW] = previousShootDodgeAngle - SHOOT_DODGE_CLIENT_TURN_RATE * (cg.time - previousShootDodgeAngleTime);
 				}
-				else
-				{
+				else // don't do this when on ground or just starting shoot dodging to set up initial state
 					angles[YAW] = desiredShootDodgeYawAngle;
-					previousShootDodgeAngle = desiredShootDodgeYawAngle;
-				}
 
+				previousShootDodgeAngle = angles[YAW];
 				havePreviousShootDodgeAngle = qtrue;
 				previousShootDodgeAngleTime = cg.time;
 			}

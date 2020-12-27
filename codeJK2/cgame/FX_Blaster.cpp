@@ -60,8 +60,10 @@ void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weap
 
 		if (cent && cent->gent && cent->gent->owner && PM_InShootDodgeInAir(&cent->gent->owner->client->ps))
 		{
-			float shootDodgeScale = SHOOT_DODGE_BLASTER_BOLT_FX_SCALE;
-			VectorScale(forward, shootDodgeScale, forward);
+			vec3_t shootDodgeBlasterFXOrigin;
+			VectorMA(cent->lerpOrigin, SHOOT_DODGE_BLASTER_PROJECTILE_CLIENT_OFFSET, forward, shootDodgeBlasterFXOrigin);
+			theFxScheduler.PlayEffect(cgs.effects.blasterShotEffect, shootDodgeBlasterFXOrigin, forward);
+			return;
 		}
 	}
 

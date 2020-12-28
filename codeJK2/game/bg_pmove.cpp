@@ -8155,6 +8155,8 @@ static void PM_ShootDodge()
 
 	// now copy over the direction of shoot dodge we've calucated to player state for client side interpolation
 	VectorCopy(curDir, pm->ps->shootDodgeDir);
+
+	Com_Printf("Pressed button is: %d\n", pm->cmd.buttons);
 	
 	g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
 	pm->ps->velocity[2] += JUMP_VELOCITY * 5 / 4; // start jumping

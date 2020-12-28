@@ -2249,9 +2249,9 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			// if getting up from a shoot dodge face the direction you were moving
 			if (PM_InGetUp(&cent->gent->client->ps))
 			{
-				vec3_t movDir, movAngles;
-				VectorNormalize2(cent->gent->client->ps.moveDir, movDir);
-				vectoangles(movDir, movAngles);
+				vec3_t shootDodgeDir, shootDodgeAngles;
+				VectorNormalize2(cent->gent->client->ps.shootDodgeDir, shootDodgeDir);
+				vectoangles(shootDodgeDir, shootDodgeAngles);
 				switch (cent->gent->client->ps.legsAnim)
 				{
 				case BOTH_GETUP_L:
@@ -2260,16 +2260,16 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 				case BOTH_GETUP_R:
 				case BOTH_FORCE_GETUP_R:
 				case BOTH_FORCE_GETUP_R2:
-					angles[YAW] = AngleNormalize180(movAngles[YAW]);
+					angles[YAW] = AngleNormalize180(shootDodgeAngles[YAW]);
 					break;
 				}
 			}
 			// when shoot dodging face direction you're moving
 			else if (PM_InShootDodge(&cent->gent->client->ps))
 			{
-				vec3_t movDir, movAngles;
-				VectorNormalize2(cent->gent->client->ps.moveDir, movDir);
-				vectoangles(movDir, movAngles);
+				vec3_t shootDodgeDir, shootDodgeAngles;
+				VectorNormalize2(cent->gent->client->ps.shootDodgeDir, shootDodgeDir);
+				vectoangles(shootDodgeDir, shootDodgeAngles);
 
 				float desiredShootDodgeYawAngle;
 
@@ -2277,16 +2277,16 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 				switch (cent->gent->client->ps.legsAnim)
 				{
 				case BOTH_SHOOTDODGE_B:
-					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW] + 180);
+					desiredShootDodgeYawAngle = AngleNormalize180(shootDodgeAngles[YAW] + 180);
 					break;
 				case BOTH_SHOOTDODGE_L:
-					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW] - 90);
+					desiredShootDodgeYawAngle = AngleNormalize180(shootDodgeAngles[YAW] - 90);
 					break;
 				case BOTH_SHOOTDODGE_R:
-					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW] + 90);
+					desiredShootDodgeYawAngle = AngleNormalize180(shootDodgeAngles[YAW] + 90);
 					break;
 				default:
-					desiredShootDodgeYawAngle = AngleNormalize180(movAngles[YAW]);
+					desiredShootDodgeYawAngle = AngleNormalize180(shootDodgeAngles[YAW]);
 				}
 
 				// when in the air and turning, turn at a rate so movements don't look robotic, also if it's less than 2 degrees, clamp so it doesn't jitter

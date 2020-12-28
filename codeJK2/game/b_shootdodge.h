@@ -23,7 +23,7 @@ extern qboolean PM_IsShootdodgeWeapon(int weapon);
 
 
 // WP_BRYAR_PISTOL
-#define SHOOT_DODGE_BRYAR_CHARGE_REDUCTION SHOOT_DODGE_TIME_DILATION * .35f;
+#define SHOOT_DODGE_BRYAR_CHARGE_REDUCTION 0.3f;
 
 
 // WP_BLASTER

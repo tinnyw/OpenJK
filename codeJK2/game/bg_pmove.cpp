@@ -8144,17 +8144,16 @@ static void PM_ShootDodge()
 	if (PM_IsWallRunAnimation(pm->ps->legsAnim))
 	{
 		shootDodgeSpeed = 100.0f;
-		// figure out how to convert pml.right to right dir vec
 		AngleVectors(cg.refdefViewAngles, NULL, curDir, NULL);
-		VectorNormalize2(curDir, curDir);
+		VectorNormalize(curDir);
 		if (pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP)
 			VectorScale(curDir, -1, curDir);
 	}
 	else
 	{
 		shootDodgeSpeed = VectorNormalize2(pm->ps->velocity, curDir) / 7.0f;
-		VectorCopy(curDir, pm->ps->moveDir);
 	}
+	VectorCopy(curDir, pm->ps->shootDodgeDir);
 	
 	g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
 
@@ -9034,13 +9033,13 @@ static void PM_ShootDodgeAngles(pmove_t* pm)
 	if (!pm || !pm->ps || !PM_InShootDodgeInAir(pm->ps))
 		return;
 
-	vec3_t movAngles;
+	vec3_t shootDodgeAngles;
 	float viewMovDiffYaw, viewMovDiffPitch;
 
 	// get angles for the shoot dodge direction
-	vectoangles(pm->ps->moveDir, movAngles);
+	vectoangles(pm->ps->shootDodgeDir, shootDodgeAngles);
 	// and now get the delta between where you're aiming and where you're dodging to
-	viewMovDiffYaw = AngleNormalize180(cg.refdefViewAngles[YAW] - movAngles[YAW]);
+	viewMovDiffYaw = AngleNormalize180(cg.refdefViewAngles[YAW] - shootDodgeAngles[YAW]);
 	//Com_Printf("Move yaw: %f, view yaw: %f, legsTimer: %d, diff: %f\n", movAngles[YAW], pm->ps->viewangles[YAW], pm->ps->legsAnimTimer, viewMovDiffYaw);
 
 	switch (pm->ps->legsAnim)

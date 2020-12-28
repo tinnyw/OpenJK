@@ -8141,6 +8141,7 @@ static void PM_ShootDodge()
 	vec3_t curDir;
 	float shootDodgeSpeed;
 
+	// if you're starting from a wall run, make the shoot dodge direction perpendicular to where you're running
 	if (PM_IsWallRunAnimation(pm->ps->legsAnim))
 	{
 		shootDodgeSpeed = 100.0f;
@@ -8149,17 +8150,15 @@ static void PM_ShootDodge()
 		if (pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP)
 			VectorScale(curDir, -1, curDir);
 	}
-	else
-	{
+	else // else just use the velocity for which way to figure out which way to shoot dodge
 		shootDodgeSpeed = VectorNormalize2(pm->ps->velocity, curDir) / 7.0f;
-	}
+
+	// now copy over the direction of shoot dodge we've calucated to player state for client side interpolation
 	VectorCopy(curDir, pm->ps->shootDodgeDir);
 	
 	g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
-
 	pm->ps->velocity[2] += JUMP_VELOCITY * 5 / 4; // start jumping
-
-	G_SoundOnEnt(pm->gent, CHAN_VOICE, "sound/shoot_dodge/bassbullettime8db.mp3");
+	G_SoundOnEnt(pm->gent, CHAN_VOICE, "sound/shoot_dodge/bassbullettime8db.mp3"); // sound effect
 
 	// set the anims - first the torso weapon anims
 	switch (pm->ps->weapon)
@@ -8173,14 +8172,6 @@ static void PM_ShootDodge()
 		break;
 	}
 
-	Com_Printf("Wall run animation is: %d\n", pm->ps->legsAnim);
-
-	//918 wall run left -> BOTH_WALL_RUN_LEFT
-	// 931 what's back
-
-	//915 wall run right -> BOTH_WALL_RUN_RIGHT
-	// 931 what's back
-
 	// now the lower body anims
 	if (pm->cmd.forwardmove > 0 && !PM_IsWallRunAnimation(pm->ps->legsAnim))
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_F, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
@@ -8190,10 +8181,8 @@ static void PM_ShootDodge()
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_L, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 	else
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_R, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
-
-	Com_Printf("Shoot dodge animation is: %d and right move is %f and button is %d\n", pm->ps->legsAnim, pm->cmd.rightmove, pm->cmd.buttons);
 		
-	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in direction facing
+	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in appropriate direction
 }
 
 static void PM_StopShootDodge()

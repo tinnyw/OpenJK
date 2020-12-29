@@ -120,6 +120,8 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 		trace_t	trace;
 		float	dist, yawAdjust;
 
+		// only allow shootdoding from wall runs if pressing the opposite direction button from the direction of the wall run
+		// have to do this here since ucmd rightmove is cleared out for opposite direction
 		if (ent->client->ps.legsAnim == BOTH_WALL_RUN_LEFT && ucmd->rightmove > 0)
 			canShootDodgeFromWallrun = qtrue;
 		else if(ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT && ucmd->rightmove < 0)

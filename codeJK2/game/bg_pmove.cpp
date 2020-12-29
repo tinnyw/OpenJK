@@ -8121,10 +8121,7 @@ static qboolean PM_CanShootDodge()
 		return qfalse;
 
 	// shoot dodge from a wall run if pressing opposite direction button
-	if ((pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP) && pm->cmd.rightmove > 0)
-		return qtrue;
-
-	if ((pm->ps->legsAnim == BOTH_WALL_RUN_LEFT || pm->ps->legsAnim == BOTH_WALL_RUN_LEFT_STOP) && pm->cmd.rightmove < 0)
+	if (PM_IsWallRunAnimation(pm->ps->legsAnim) && canShootDodgeFromWallrun)
 		return qtrue;
 
 	if (pm->ps->groundEntityNum == ENTITYNUM_NONE && pm->ps->forcePowerLevel[FP_LEVITATION] < FORCE_LEVEL_3) // must start from ground, unless jump level 3+

@@ -5,14 +5,16 @@
 #include "g_local.h"
 
 // shoot dodge dependencies
-extern qboolean PM_InShootDodge(playerState_t* ps);
-extern qboolean PM_InShootDodgeInAir(playerState_t* ps);
-extern qboolean PM_InShootDodgeOnGround(playerState_t* ps);
-extern qboolean PM_IsShootdodgeWeapon(int weapon);
+qboolean PM_InShootDodge(playerState_t* ps);
+qboolean PM_InShootDodgeInAir(playerState_t* ps);
+qboolean PM_InShootDodgeOnGround(playerState_t* ps);
+qboolean PM_IsShootdodgeWeapon(int weapon);
+
+extern qboolean canShootDodgeFromWallrun;
 
 
 // SHOOT DODGE GENERAL
-#define SHOOT_DODGE_TIME_DILATION .1f//.07f
+#define SHOOT_DODGE_TIME_DILATION 1.0f//.1f//.07f
 #define SHOOT_DODGE_FIRE_RATE_REDUCTION .4f
 #define SHOOT_DODGE_PROJECTILE_SPEED_MULTIPLIER 1.7f
 

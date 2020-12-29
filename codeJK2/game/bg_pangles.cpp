@@ -109,6 +109,8 @@ qboolean PM_AdjustAnglesToGripper( gentity_t *ent, usercmd_t *ucmd )
 	return qfalse;
 }
 
+qboolean canShootDodgeFromWallrun = qfalse;
+
 qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doMove )
 {
 	if (( ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT || ent->client->ps.legsAnim == BOTH_WALL_RUN_LEFT ) && ent->client->ps.legsAnimTimer > 500 )
@@ -117,6 +119,13 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 		vec3_t	rt, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};		
 		trace_t	trace;
 		float	dist, yawAdjust;
+
+		if (ent->client->ps.legsAnim == BOTH_WALL_RUN_LEFT && ucmd->rightmove > 0)
+			canShootDodgeFromWallrun = qtrue;
+		else if(ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT && ucmd->rightmove < 0)
+			canShootDodgeFromWallrun = qtrue;
+		else
+			canShootDodgeFromWallrun = qfalse;
 
 		AngleVectors( fwdAngles, NULL, rt, NULL );
 		if ( ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT )

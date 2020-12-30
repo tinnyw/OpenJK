@@ -2145,6 +2145,29 @@ static qboolean G_Dismemberable2( gentity_t *self, int hitLoc )
 	return qtrue;
 }
 
+qboolean isDismemberableMod(int mod)
+{
+	switch (mod)
+	{
+	case MOD_SABER:
+	case MOD_ROCKET:
+	case MOD_ROCKET_ALT:
+	case MOD_REPEATER_ALT:
+	case MOD_FLECHETTE:
+	case MOD_FLECHETTE_ALT:
+	case MOD_EXPLOSIVE:
+	case MOD_EXPLOSIVE_SPLASH:
+	case MOD_EMPLACED:
+	case MOD_LASERTRIP:
+	case MOD_LASERTRIP_ALT:
+	case MOD_THERMAL:
+	case MOD_THERMAL_ALT:
+	case MOD_DETPACK:
+		return qtrue;
+	}
+	return qfalse;
+}
+
 extern qboolean G_StandardHumanoid( const char *modelName );
 qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse )
 {
@@ -2155,7 +2178,7 @@ extern cvar_t	*g_iscensored;
 #ifdef GERMAN_CENSORED
 	if ( 0 ) //germany == censorship
 #else
-	if ( !g_iscensored->integer && ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && mod == MOD_SABER )//only lightsaber
+	if ( !g_iscensored->integer && ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && isDismemberableMod(mod) )//only lightsaber, or other heavy weapons
 #endif
 	{//FIXME: don't do strcmps here
 		if ( G_StandardHumanoid( self->NPC_type )
@@ -5381,6 +5404,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				}
 			}
 		}
+	}
+
+	if (targ && targ->client && targ->health <= 0)
+	{
+		G_DoDismemberment(targ, point, mod, damage, hitLoc, qtrue);
 	}
 }
 

@@ -10,13 +10,14 @@ qboolean PM_InShootDodgeInAir(playerState_t* ps);
 qboolean PM_InShootDodgeOnGround(playerState_t* ps);
 qboolean PM_IsShootdodgeWeapon(int weapon);
 
+// bg_angles tells bg_pmove that the appropriate buttons are pressed for diving from running on walls
 extern qboolean canShootDodgeFromWallrun;
-
 
 // SHOOT DODGE GENERAL
 #define SHOOT_DODGE_TIME_DILATION .1f//.07f
 #define SHOOT_DODGE_FIRE_RATE_REDUCTION .4f
 #define SHOOT_DODGE_PROJECTILE_SPEED_MULTIPLIER 1.7f
+
 
 // SHOOT DODGE ANIMATIONS
 #define SHOOT_DODGE_ANIMATION_BLEND_TIME 200
@@ -33,9 +34,9 @@ extern qboolean canShootDodgeFromWallrun;
 #define SHOOT_DODGE_BLASTER_PROJECTILE_CLIENT_OFFSET -200.0f
 #define SHOOT_DODGE_SPREAD_MULTIPLIER .4f
 
+
 // WP_TENLOSS
 #define SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION SHOOT_DODGE_TIME_DILATION;
-
 
 
 // WP_DEMP

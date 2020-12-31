@@ -3381,7 +3381,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		else
 		{
 			anim = G_PickDeathAnim( self, self->pos1, damage, meansOfDeath, hitLoc );
-			if ( dflags & DAMAGE_DISMEMBER )
+			if ( /*dflags & DAMAGE_DISMEMBER*/ isDismemberableMod(meansOfDeath) )
 			{
 				G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc );
 			}
@@ -4126,7 +4126,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	}
 
 	//do any dismemberment if there's any to do...
-	if ( (dflags&DAMAGE_DISMEMBER) && G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc ) && !specialAnim )
+	if ( /*(dflags&DAMAGE_DISMEMBER) &&*/ G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc ) && !specialAnim )
 	{//we did dismemberment and our death anim is okay to override
 		if ( hitLoc == HL_HAND_RT && self->locationDamage[hitLoc] >= Q3_INFINITE && cliff_fall != 2 && self->client->ps.groundEntityNum != ENTITYNUM_NONE )
 		{//just lost our right hand and we're on the ground, use the special anim

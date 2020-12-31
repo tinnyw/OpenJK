@@ -1280,74 +1280,96 @@ void G_RunMissile( gentity_t *ent )
 
 	//FIXME: Rolling things hitting G2 polys is weird
 	///////////////////////////////////////////////////////
-//?	if ( tr.fraction != 1 ) 
-	{
 	// did we hit or go near a Ghoul2 model?
-//		qboolean hitModel = qfalse;
-		for (int i=0; i < MAX_G2_COLLISIONS; i++)
+	// take out body parts even when dead
+	for (int i=0; i < MAX_G2_COLLISIONS; i++)
+	{
+		if (tr.G2CollisionMap[i].mEntityNum == -1)
+			continue;
+
+		CCollisionRecord &coll = tr.G2CollisionMap[i];
+		gentity_t	*hitEnt = &g_entities[coll.mEntityNum];
+
+		if (trHitLoc==HL_NONE)
 		{
-			if (tr.G2CollisionMap[i].mEntityNum == -1)
-			{
-				break;
-			}
-
-			CCollisionRecord &coll = tr.G2CollisionMap[i];
-			gentity_t	*hitEnt = &g_entities[coll.mEntityNum];
-
-/*	Sorry...this was just getting in the way....
-#if _DEBUG
-			vec3_t delta;
-			VectorSubtract(origin, coll.mCollisionPosition, delta);
-			VectorNormalize(delta);
-			VectorScale(delta, 30, delta);
-
-			if (coll.mFlags & G2_BACKFACE)
-			{
-				VectorAdd(delta, coll.mCollisionPosition, delta);
-				G_DebugLine(coll.mCollisionPosition, delta, 10000, 0x00ff0000, qtrue);
-			}
-			else
-			{
-				VectorSubtract(coll.mCollisionPosition, delta, delta);
-				G_DebugLine(coll.mCollisionPosition, delta, 10000, 0x0000ff00, qtrue);
-			}
-
-//loadsavecrash
-//			VectorCopy(hitEnt->mins, hitEnt->s.mins);
-//			VectorCopy(hitEnt->maxs, hitEnt->s.maxs);
-#endif
-*/
-
-			// process collision records here...
-			// make sure we only do this once, not for all the entrance wounds we might generate
-			if ((coll.mFlags & G2_FRONTFACE)/* && !(hitModel)*/ && hitEnt->health)
-			{
-				// create a new surface using the details of what poly/surface/model we hit
-//				int newSurface = gi.G2API_AddSurface(&hitEnt->ghoul2[coll.mModelIndex], coll.mSurfaceIndex, coll.mPolyIndex, coll.mBarycentricI, coll.mBarycentricJ, 10);
-//				surfaceInfo_t	*newSuf = &hitEnt->ghoul2[coll.mModelIndex].mSlist[newSurface];
-				// attach a bolt to this surface
-//				int newBolt = gi.G2API_AddBoltSurfNum(&hitEnt->ghoul2[coll.mModelIndex], newSurface);
-				// now attach an effect to this new bolt
-
-//	Bolting on this effect just looks dumb and adds lots of unnecessary effects to the scene
-//				
-//				G_PlayEffect( G_EffectIndex( "blaster/smoke_bolton") , coll.mModelIndex, newBolt, hitEnt->s.number);
-//
-//
-
-//				G_SetBoltSurfaceRemoval(coll.mEntityNum, coll.mModelIndex, newBolt, newSurface, 10000);
-//				hitModel = qtrue;
-
-				if (trHitLoc==HL_NONE)
-				{
-					G_GetHitLocFromSurfName( &g_entities[coll.mEntityNum], gi.G2API_GetSurfaceName( &g_entities[coll.mEntityNum].ghoul2[coll.mModelIndex], coll.mSurfaceIndex ), &trHitLoc, coll.mCollisionPosition, NULL, NULL, ent->methodOfDeath );
-				}
-
-				break; // NOTE: the way this whole section was working, it would only get inside of this IF once anyway, might as well break out now
-			}
+			G_GetHitLocFromSurfName( &g_entities[coll.mEntityNum], gi.G2API_GetSurfaceName( &g_entities[coll.mEntityNum].ghoul2[coll.mModelIndex], coll.mSurfaceIndex ), &trHitLoc, coll.mCollisionPosition, NULL, NULL, ent->methodOfDeath );
+			if (trHitLoc != HL_NONE)
+				break;//found a body part, break out
 		}
 	}
-/////////////////////////////////////////////////////////
+
+	/*for (int z = 0; z < MAX_G2_COLLISIONS; z++)
+	{
+		if (tr.G2CollisionMap[z].mEntityNum == -1)
+		{//actually, completely break out of this for loop since nothing after this in the aray should ever be valid either
+			continue;//break;//
+		}
+
+		CCollisionRecord& coll = tr.G2CollisionMap[z];
+		if (i == numHitEnts)
+		{//first time we hit this ent
+			if (numHitEnts == MAX_G2_COLLISIONS)
+			{//hit too many damn ents!
+				continue;
+			}
+			hitEntNum[numHitEnts] = coll.mEntityNum;
+			if (!coll.mFlags)
+			{//hmm, we came out first, so we must have started inside
+				//we'll want to subtract this dist
+				hitEntDmgAdd[numHitEnts] = distFromStart;
+			}
+			else
+			{//we're entering the model
+				//we'll want to subtract this dist
+				hitEntDmgSub[numHitEnts] = distFromStart;
+			}
+			//keep track of how far in the damage was done
+			hitEntStartFrac[numHitEnts] = hitEntDmgSub[numHitEnts] / length;
+			//remember the entrance point
+			VectorCopy(coll.mCollisionPosition, hitEntPoint[numHitEnts]);
+			//remember the entrance dir
+			VectorCopy(coll.mCollisionNormal, hitEntDir[numHitEnts]);
+			VectorNormalize(hitEntDir[numHitEnts]);
+
+			//do the effect
+
+			//FIXME: check material rather than team?
+			hitEnt = &g_entities[hitEntNum[numHitEnts]];
+			hitEffect = hit_blood_sparks;
+			if (hitEnt != NULL)
+			{
+				if (hitEnt->client)
+				{
+					class_t npc_class = hitEnt->client->NPC_class;
+					if (npc_class == CLASS_SEEKER || npc_class == CLASS_PROBE || npc_class == CLASS_MOUSE || npc_class == CLASS_REMOTE ||
+						npc_class == CLASS_GONK || npc_class == CLASS_R2D2 || npc_class == CLASS_R5D2 ||
+						npc_class == CLASS_PROTOCOL || npc_class == CLASS_MARK1 || npc_class == CLASS_MARK2 ||
+						npc_class == CLASS_INTERROGATOR || npc_class == CLASS_ATST || npc_class == CLASS_SENTRY)
+					{
+						hitEffect = hit_sparks;
+					}
+				}
+				else
+				{
+					hitEffect = hit_sparks;
+				}
+			}
+
+			//FIXME: play less if damage is less?
+			G_PlayEffect(hitEffect, coll.mCollisionPosition, coll.mCollisionNormal);
+
+			//Get the hit location based on surface name
+			if ((hitLoc[numHitEnts] == HL_NONE && trHitLoc == HL_NONE)
+				|| (hitDismemberLoc[numHitEnts] == HL_NONE && trDismemberLoc == HL_NONE)
+				|| (!hitDismember[numHitEnts] && !trDismember))
+			{//no hit loc set for this ent this damage cycle yet
+				//FIXME: find closest impact surf *first* (per ent), then call G_GetHitLocFromSurfName?
+				trDismember = G_GetHitLocFromSurfName(&g_entities[coll.mEntityNum], gi.G2API_GetSurfaceName(&g_entities[coll.mEntityNum].ghoul2[coll.mModelIndex], coll.mSurfaceIndex), &trHitLoc, coll.mCollisionPosition, dmgDir, bladeDir, MOD_SABER);
+				trDismemberLoc = trHitLoc;
+			}
+			numHitEnts++;
+		}
+	}*/
 
 	if ( tr.startsolid ) 
 	{

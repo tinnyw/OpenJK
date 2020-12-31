@@ -22,7 +22,7 @@ extern qboolean canShootDodgeFromWallrun;
 // SHOOT DODGE ANIMATIONS
 #define SHOOT_DODGE_ANIMATION_BLEND_TIME 200
 // rate at which to turn into one shoot dodge animation to another instead of being strictly 90 off and robotic
-#define SHOOT_DODGE_CLIENT_TURN_RATE (90.0f / 500.0f)
+#define SHOOT_DODGE_CLIENT_TURN_RATE (90.0f / 300.0f)
 
 
 // WP_BRYAR_PISTOL

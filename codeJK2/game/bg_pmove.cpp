@@ -8120,6 +8120,9 @@ static qboolean PM_CanShootDodge()
 	if (pm->ps->forcePowersActive & (1 << FP_SPEED)) // currently don't support starting shoot dodge when in force speed
 		return qfalse;
 
+	if (pm->waterlevel > 2) //no shoot dodging when swimming
+		return qfalse;
+
 	// shoot dodge from a wall run if pressing opposite direction button
 	if (PM_IsWallRunAnimation(pm->ps->legsAnim) && canShootDodgeFromWallrun)
 		return qtrue;

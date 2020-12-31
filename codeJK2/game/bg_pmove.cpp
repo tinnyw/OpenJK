@@ -8581,6 +8581,9 @@ static void PM_Weapon( void )
 				// if in shoot dodge raise rate of fire slightly
 				if (PM_InShootDodgeInAir(pm->ps)) {
 					addTime *= SHOOT_DODGE_FIRE_RATE_REDUCTION;
+
+					if (pm->ps->weapon == WP_DISRUPTOR && (pm->cmd.buttons & BUTTON_ALT_ATTACK))
+						addTime *= SHOOT_DODGE_TENLOSS_ALT_DEBOUNCE_REDUCTION;
 				}
 
 				if ( pm->ps->clientNum == 0 && !player_locked && pm->ps->forcePowersActive&(1<<FP_SPEED) )

@@ -1414,7 +1414,7 @@ static qboolean	CG_CalcFov( void ) {
 						shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
 
 					// disruptor zooming in faster
-					cg_zoomFov -= (cg.frametime * 0.075f * shootDodgeTenlossChargeReductionModifier);
+					cg_zoomFov -= (cg.frametime * 0.075f / shootDodgeTenlossChargeReductionModifier);
 				}
 
 				// Clamp zoomFov

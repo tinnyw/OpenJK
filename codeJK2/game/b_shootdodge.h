@@ -10,6 +10,11 @@ qboolean PM_InShootDodgeInAir(playerState_t* ps);
 qboolean PM_InShootDodgeOnGround(playerState_t* ps);
 qboolean PM_IsShootdodgeWeapon(int weapon);
 
+// time dilation functions
+float getForceSpeedTimeDilation(playerState_t* ps);
+float getShootDodgeTimeDilation(playerState_t* ps);
+float getAllTimeDilation(playerState_t* ps);
+
 // bg_angles tells bg_pmove that the appropriate buttons are pressed for diving from running on walls
 extern qboolean canShootDodgeFromWallrun;
 

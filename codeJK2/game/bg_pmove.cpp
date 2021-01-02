@@ -3760,6 +3760,26 @@ qboolean PM_InShootDodgeInAir(playerState_t* ps)
 	return qfalse;
 }
 
+float getForceSpeedTimeDilation(playerState_t* ps)
+{
+	float dilation = 1.0f;
+
+	if (ps->forcePowersActive & (1 << FP_SPEED))
+		dilation *= forceSpeedValue[ps->forcePowerLevel[FP_SPEED]];
+
+	return dilation;
+}
+
+float getShootDodgeTimeDilation(playerState_t* ps)
+{
+	return PM_InShootDodgeInAir(ps) ? SHOOT_DODGE_TIME_DILATION : 1.0f;
+}
+
+float getAllTimeDilation(playerState_t* ps)
+{
+	return getForceSpeedTimeDilation(ps) * getShootDodgeTimeDilation(ps);
+}
+
 qboolean PM_InShootDodgeOnGround(playerState_t* ps)
 {
 	// if we're in the air or we're at the beginning of the shoot dodge animation then consider ourselves not in the shoot dodge on the ground state
@@ -7628,11 +7648,11 @@ void PM_WeaponLightsaber(void)
 					{//Special test for Matrix Mode (tm)
 						if ( pm->ps->clientNum == 0 && !player_locked && pm->ps->forcePowersActive&(1<<FP_SPEED) )
 						{//player always fires at normal speed
-							addTime *= g_timescale->value;
+							addTime *= getForceSpeedTimeDilation(pm->ps);
 						}
 						else if ( g_entities[pm->ps->clientNum].client && pm->ps->forcePowersActive&(1<<FP_SPEED) )
 						{
-							addTime *= g_timescale->value;
+							addTime *= getForceSpeedTimeDilation(pm->ps);
 						}
 					}
 				}
@@ -7652,12 +7672,12 @@ void PM_WeaponLightsaber(void)
 					{//Special test for Matrix Mode (tm)
 						if ( pm->ps->clientNum == 0 && !player_locked && pm->ps->forcePowersActive&(1<<FP_SPEED) )
 						{//player always fires at normal speed
-							addTime *= g_timescale->value;
+							addTime *= getForceSpeedTimeDilation(pm->ps);
 						}
 						else if ( g_entities[pm->ps->clientNum].client
 							&& pm->ps->forcePowersActive&(1<<FP_SPEED) )
 						{
-							addTime *= g_timescale->value;
+							addTime *= getForceSpeedTimeDilation(pm->ps);
 						}
 					}
 				}
@@ -8117,9 +8137,6 @@ static qboolean PM_CanShootDodge()
 	if (PM_InKnockDown(pm->ps) || PM_InKnockDownOnGround(pm->ps) || PM_InRoll(pm->ps) || (pm->ps->pm_flags & PMF_DUCKED) || PM_InShootDodge(pm->ps))
 		return qfalse;
 
-	if (pm->ps->forcePowersActive & (1 << FP_SPEED)) // currently don't support starting shoot dodge when in force speed
-		return qfalse;
-
 	if (pm->waterlevel > 2) //no shoot dodging when swimming
 		return qfalse;
 
@@ -8190,7 +8207,7 @@ static void PM_ShootDodge()
 static void PM_StopShootDodge()
 {
 	if (g_timescale->value < 1.0f)
-		g_timescale->value = 1.0;
+		g_timescale->value = getForceSpeedTimeDilation(pm->ps);
 }
 
 /*
@@ -8588,12 +8605,12 @@ static void PM_Weapon( void )
 
 				if ( pm->ps->clientNum == 0 && !player_locked && pm->ps->forcePowersActive&(1<<FP_SPEED) )
 				{//player always fires at normal speed
-					addTime *= g_timescale->value;
+					addTime *= getForceSpeedTimeDilation(pm->ps);
 				}
 				else if ( g_entities[pm->ps->clientNum].client
 					&& pm->ps->forcePowersActive&(1<<FP_SPEED) )
 				{
-					addTime *= g_timescale->value;
+					addTime *= getForceSpeedTimeDilation(pm->ps);
 				}
 			}
 		}
@@ -8782,12 +8799,12 @@ void PM_SetSpecialMoveValues (void )
 			{
 				if ( pm->ps->clientNum == 0 && !player_locked && pm->ps->forcePowersActive&(1<<FP_SPEED) )
 				{
-					pml.frametime *= (1.0f/g_timescale->value);
+					pml.frametime *= (1.0f/getForceSpeedTimeDilation(pm->ps));
 				}
 				else if ( g_entities[pm->ps->clientNum].client
 					&& pm->ps->forcePowersActive&(1<<FP_SPEED) )
 				{
-					pml.frametime *= (1.0f/g_timescale->value);
+					pml.frametime *= (1.0f/getForceSpeedTimeDilation(pm->ps));
 				}
 			}
 		}
@@ -9025,6 +9042,9 @@ static void PM_SetShootDodgeAnimationInAir(pmove_t* pm, int anim)
 static void PM_ShootDodgeAngles(pmove_t* pm)
 {
 	if (!pm || !pm->ps || !PM_InShootDodgeInAir(pm->ps))
+		return;
+
+	if (MatrixMode)// don't update angles in matrix mode
 		return;
 
 	vec3_t shootDodgeAngles;

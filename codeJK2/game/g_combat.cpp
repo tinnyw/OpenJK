@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_local.h"
 #include "g_icarus.h"
 #include "wp_saber.h"
+#include "b_shootdodge.h"
 #include "Q3_Interface.h"
 #include "../../code/qcommon/strippublic.h"
 
@@ -739,10 +740,10 @@ void G_MakeTeamVulnerable( void )
 
 void G_StartMatrixEffect( gentity_t *ent, qboolean falling = qfalse, int length = 1000 )
 {//FIXME: only do this if no other enemies around?
-	if ( g_timescale->value != 1.0 )
+	/*if ( g_timescale->value != 1.0 )
 	{//already in some slow-mo mode
 		return;
-	}
+	}*/
 
 	gentity_t	*matrix = G_Spawn();
 	if ( matrix )
@@ -802,6 +803,38 @@ qboolean G_JediInRoom( vec3_t from )
 		{
 			continue;
 		}
+		return qtrue;
+	}
+	return qfalse;
+}
+
+// new code to check for if there are any bad guys in the room left for matrix effect
+qboolean G_BadGuyInRoom(vec3_t from)
+{
+	gentity_t* ent;
+	int i;
+	//	for ( i = 1, ent = &g_entities[1]; i < globals.num_entities; i++, ent++ )
+	for (i = 1; i < globals.num_entities; i++)
+	{
+		if (!PInUse(i))
+			continue;
+
+		ent = &g_entities[i];
+		if (!ent->NPC)
+			continue;
+
+		if (ent->health <= 0)
+			continue;
+
+		if (ent->s.eFlags & EF_NODRAW)
+			continue;
+
+		if (ent->client && ent->client->playerTeam != TEAM_ENEMY)
+			continue;
+
+		if (!gi.inPVS(ent->currentOrigin, from))
+			continue;
+
 		return qtrue;
 	}
 	return qfalse;
@@ -3541,7 +3574,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			{//any jedi killed by player-saber
 				if ( d_slowmodeath->integer < 3 )
 				{//must be the last jedi in the room
-					if ( !G_JediInRoom( attacker->currentOrigin ) )
+					if (!G_JediInRoom(attacker->currentOrigin))
 					{
 						lastInGroup = qtrue;
 					}
@@ -3560,6 +3593,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				{//Matrix!
 					G_StartMatrixEffect( self );
 				}
+				else if (attacker->client && PM_InShootDodge(&attacker->client->ps) && !G_BadGuyInRoom(attacker->currentOrigin))
+				{
+					G_StartMatrixEffect(self);
+				}
 			}
 			else
 			{//all player-saber kills
@@ -3571,6 +3608,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					&& (d_slowmodeath->integer > 4||lastInGroup||holdingSaber))//either slow mo death level 5 (any enemy) or 4 and I was the last in my group or I'm a saber user
 				{//Matrix!
 					G_StartMatrixEffect( self );
+				}
+				else if (attacker->client && PM_InShootDodge(&attacker->client->ps) && !G_BadGuyInRoom(attacker->currentOrigin))
+				{
+					G_StartMatrixEffect(self);
 				}
 			}
 		}

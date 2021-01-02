@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define GAME_INCLUDE
 #include "../../code/qcommon/q_shared.h"
 #include "b_local.h"
+#include "b_shootdodge.h"
 #include "g_shared.h"
 #include "bg_local.h"
 #include "../cgame/cg_local.h"
@@ -2203,11 +2204,11 @@ float PM_GetTimeScaleMod( gentity_t *gent )
 		{
 			if ( gent && gent->s.clientNum == 0 && !player_locked && gent->client->ps.forcePowersActive&(1<<FP_SPEED) )
 			{
-				return (1.0 / g_timescale->value);
+				return (1.0 / getForceSpeedTimeDilation(&gent->client->ps));
 			}
 			else if ( gent && gent->client && gent->client->ps.forcePowersActive&(1<<FP_SPEED) )
 			{
-				return (1.0 / g_timescale->value);
+				return (1.0 / getForceSpeedTimeDilation(&gent->client->ps));
 			}
 		}
 	}

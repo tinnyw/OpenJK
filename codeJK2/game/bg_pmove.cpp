@@ -9004,39 +9004,11 @@ static void PM_SetShootDodgeAnimationInAir(pmove_t* pm, int anim)
 {
 	int currentLegsAnimTime = pm->ps->legsAnimTimer;
 
-	PM_SetLegsAnimTimer(pm->gent, &pm->ps->legsAnimTimer, currentLegsAnimTime);
 	gentity_t* gent = &g_entities[pm->ps->clientNum];
-
-	//pm->ps->
-
-	//PM_SetAnim(pm, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 100);
-	// change blend time back to 500
 	PM_SetAnimFinal(&pm->ps->torsoAnim, &pm->ps->legsAnim, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, &pm->ps->torsoAnimTimer, 
 		&pm->ps->legsAnimTimer, &g_entities[pm->ps->clientNum], SHOOT_DODGE_ANIMATION_BLEND_TIME, qtrue);
 
-#if 0
-	int anim = BOTH_SHOOTDODGE_R;
-	animation_t* animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
-	int firstFrame = animations[anim].firstFrame;
-	int lastFrame = (animations[anim].numFrames) + firstFrame;
-	if (firstFrame > lastFrame)
-		firstFrame = lastFrame;
-	int			actualTime = (cg.time ? cg.time : level.time);
-
-	float	currentFrame, legAnimSpeed;
-	int		flags = BONE_ANIM_OVERRIDE | BONE_ANIM_BLEND;
-
-	qboolean animatingLegs = gi.G2API_GetBoneAnimIndex(&gent->ghoul2[gent->playerModel],
-		gent->rootBone, actualTime, &currentFrame,
-		&firstFrame, &lastFrame, &flags, &legAnimSpeed, NULL);
-	/*qboolean animatingLegs = gi.G2API_GetBoneAnimIndex(&gent->ghoul2[gent->playerModel],
-		gent->rootBone, actualTime, &currentFrame,
-		&firstFrame, &lastFrame, &flags, &legAnimSpeed, NULL);*/
-
-	gi.G2API_SetBoneAnimIndex(&gent->ghoul2[gent->playerModel], gent->rootBone, //gent->upperLumbarBone
-		firstFrame, lastFrame, flags, legAnimSpeed,
-		actualTime, currentFrame, 200);
-#endif
+	PM_SetLegsAnimTimer(pm->gent, &pm->ps->legsAnimTimer, currentLegsAnimTime);
 }
 
 static void PM_ShootDodgeAngles(pmove_t* pm)

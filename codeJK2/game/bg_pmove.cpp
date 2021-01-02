@@ -9012,7 +9012,7 @@ static void PM_SetShootDodgeAnimationInAir(pmove_t* pm, int anim)
 	//PM_SetAnim(pm, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 100);
 	// change blend time back to 500
 	PM_SetAnimFinal(&pm->ps->torsoAnim, &pm->ps->legsAnim, SETANIM_LEGS, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, &pm->ps->torsoAnimTimer, 
-		&pm->ps->legsAnimTimer, &g_entities[pm->ps->clientNum], SHOOT_DODGE_ANIMATION_BLEND_TIME);
+		&pm->ps->legsAnimTimer, &g_entities[pm->ps->clientNum], SHOOT_DODGE_ANIMATION_BLEND_TIME, qtrue);
 
 #if 0
 	int anim = BOTH_SHOOTDODGE_R;

@@ -2224,7 +2224,7 @@ PM_SetAnimFinal
 void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 					 int setAnimParts,int anim,int setAnimFlags,
 					 int *torsoAnimTimer,int *legsAnimTimer,
-					 gentity_t *gent,int blendTime)		// default blendTime=350
+					 gentity_t *gent,int blendTime, qboolean blendingForShootDodge)		// default blendTime=350
 {
 	if(!ValidAnimFileIndex(gent->client->clientInfo.animFileIndex))
 	{
@@ -2654,6 +2654,13 @@ setAnimLegs:
 							-1,
 							blendTime);
 #endif
+						if (blendingForShootDodge)
+						{
+							int frameOfCurrentAnimation = currentFrame - startFrame;
+							firstFrame += frameOfCurrentAnimation;
+							if (firstFrame > lastFrame)
+								firstFrame = lastFrame;
+						}
 						gi.G2API_SetBoneAnimIndex(&gent->ghoul2[gent->playerModel], gent->rootBone,
 							firstFrame, lastFrame, animFlags,
 							animSpeed, actualTime, -1, blendTime);

@@ -43,7 +43,11 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 	VectorCopy( wpMuzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
-	gentity_t *missile = CreateMissile( start, dir, REPEATER_VELOCITY, 10000, ent );
+	int velocity = REPEATER_VELOCITY;
+	if (ent->client && PM_InShootDodge(&ent->client->ps))
+		velocity *= SHOOT_DODGE_REPEATER_SPEED_EXTRA_MODIFIER;
+
+	gentity_t *missile = CreateMissile( start, dir, velocity, 10000, ent );
 
 	missile->classname = "repeater_proj";
 	missile->s.weapon = WP_REPEATER;
@@ -73,6 +77,8 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 //	}
 
 	missile->damage = damage;
+	if (ent->client && PM_InShootDodge(&ent->client->ps))
+		missile->damage *= SHOOT_DODGE_REPEATER_DAMAGE_MODIFIER;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->methodOfDeath = MOD_REPEATER;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;

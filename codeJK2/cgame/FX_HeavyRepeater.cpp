@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
+#include "../game/b_shootdodge.h"
 
 /*
 ---------------------------
@@ -38,6 +39,14 @@ void FX_RepeaterProjectileThink( centity_t *cent, const struct weaponInfo_s *wea
 	if ( VectorNormalize2( cent->currentState.pos.trDelta, forward ) == 0.0f )
 	{
 		forward[2] = 1.0f;
+	}
+
+	if (cent && cent->gent && cent->gent->owner && PM_InShootDodgeInAir(&cent->gent->owner->client->ps))
+	{
+		vec3_t shootDodgeBlasterFXOrigin;
+		VectorMA(cent->lerpOrigin, SHOOT_DODGE_REPEATER_PROJECTILE_CLIENT_OFFSET, forward, shootDodgeBlasterFXOrigin);
+		theFxScheduler.PlayEffect("repeater/projectile", shootDodgeBlasterFXOrigin, forward);
+		return;
 	}
 
 	theFxScheduler.PlayEffect( "repeater/projectile", cent->lerpOrigin, forward );

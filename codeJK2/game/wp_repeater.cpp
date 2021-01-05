@@ -23,6 +23,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_headers.h"
 
 #include "b_local.h"
+#include "b_shootdodge.h"
 #include "g_local.h"
 #include "wp_saber.h"
 #include "w_local.h"
@@ -171,9 +172,12 @@ void WP_FireRepeater( gentity_t *ent, qboolean alt_fire )
 		}
 		else
 		{
+			float shootDodgeSpreadModifier = 1.0f;
+			if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
+				shootDodgeSpreadModifier = SHOOT_DODGE_REPEATER_SPREAD_MODIFIER;
 			// add some slop to the alt-fire direction
-			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD;
-			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD;
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD * shootDodgeSpreadModifier;
+			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD * shootDodgeSpreadModifier;
 		}
 
 		AngleVectors( angs, dir, NULL, NULL );

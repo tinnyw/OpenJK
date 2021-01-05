@@ -458,7 +458,7 @@ static void CG_CalcIdealThirdPersonViewLocation(void)
 	{
 		VectorMA(cameraIdealTarget, -(cg_thirdPersonRange.value), camerafwd, cameraIdealLoc);
 	}
-	if ( cg.renderingThirdPerson && (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )
+	if ( cg.renderingThirdPerson && (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] && !PM_InShootDodgeInAir(&player->client->ps))
 	{
 		float timeLeft = player->client->ps.forcePowerDuration[FP_SPEED] - cg.time;
 		float length = FORCE_SPEED_DURATION*forceSpeedValue[player->client->ps.forcePowerLevel[FP_SPEED]];
@@ -1377,7 +1377,7 @@ static qboolean	CG_CalcFov( void ) {
 			}
 		}
 	} 
-	else if ( (!cg.zoomMode || cg.zoomMode > 2) && (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )//cg.renderingThirdPerson && 
+	else if ( (!cg.zoomMode || cg.zoomMode > 2) && (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] && !PM_InShootDodgeInAir(&player->client->ps))//cg.renderingThirdPerson && 
 	{
 		fov_x = CG_ForceSpeedFOV();
 	} else {

@@ -2012,7 +2012,7 @@ void CG_MatrixEffect ( centity_t *cent )
 		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_RNG;
 		cg.overrides.thirdPersonRange = cg_thirdPersonRange.value;
 		if (cg.overrides.active & CG_OVERRIDE_3RD_PERSON_ENT)
-			cg.overrides.thirdPersonRange *= 2;
+			cg.overrides.thirdPersonRange *= 20;
 		if ( elapsedTime < MATRIX_EFFECT_TIME*0.33 )
 		{
 			cg.overrides.thirdPersonRange += 80.0f*elapsedTime/(MATRIX_EFFECT_TIME*0.33);

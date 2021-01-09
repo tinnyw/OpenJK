@@ -1049,7 +1049,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 						*hitLoc = HL_BACK_LT;
 					}
 				}
-				else if ( upSide > -3 && mod == MOD_SABER )
+				else if ( upSide > -3/* && mod == MOD_SABER*/ )
 				{
 					*hitLoc = HL_HEAD;
 				}
@@ -2201,10 +2201,11 @@ qboolean isDismemberableMod(int mod)
 	return qfalse;
 }
 
-extern qboolean G_StandardHumanoid( const char *modelName );
+extern cvar_t* g_iscensored;
+extern qboolean G_StandardHumanoid(const char* modelName);
+
 qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse )
 {
-extern cvar_t	*g_iscensored;
 	// dismemberment -- FIXME: should have a check for how long npc has been dead so people can't
 	// continue to dismember a dead body long after it's been dead
 	//NOTE that you can only cut one thing off unless the dismemberment is >= 11381138
@@ -2229,7 +2230,7 @@ extern cvar_t	*g_iscensored;
 			switch( hitLoc )//self->hitLoc
 			{
 			case HL_LEG_RT:
-				if ( g_dismemberment->integer > 1 )
+				if ( g_dismemberment->integer )
 				{
 					doDismemberment = qtrue;
 					limbBone = "rtibia";
@@ -2245,7 +2246,7 @@ extern cvar_t	*g_iscensored;
 				}
 				break;
 			case HL_LEG_LT:
-				if ( g_dismemberment->integer > 1 )
+				if ( g_dismemberment->integer )
 				{
 					doDismemberment = qtrue;
 					limbBone = "ltibia";
@@ -2261,7 +2262,7 @@ extern cvar_t	*g_iscensored;
 				}
 				break;
 			case HL_WAIST:
-				if ( g_dismemberment->integer > 2 &&
+				if ( g_dismemberment->integer &&
 					(!self->s.number||!self->message))
 				{
 					doDismemberment = qtrue;
@@ -2347,7 +2348,7 @@ extern cvar_t	*g_iscensored;
 				}
 				break;
 			case HL_HEAD:
-				if ( g_dismemberment->integer > 2 )
+				if ( g_dismemberment->integer )
 				{
 					doDismemberment = qtrue;
 					limbBone = "cervical";
@@ -2378,6 +2379,60 @@ extern cvar_t	*g_iscensored;
 		}
 	}
 	return qfalse;
+}
+
+
+
+
+qboolean hitLocOnEntityToLocation(gentity_s* self, int hitLoc, vec3_t& limbLocation)
+{
+	if (!self || !G_StandardHumanoid(self->NPC_type))
+		return qfalse;
+
+	int	actualTime = (cg.time ? cg.time : level.time);
+	mdxaBone_t	boltMatrix;
+	vec3_t	/*tagOrg, */entYawAngles, partLocation;
+	int boltId = 0;
+	qboolean getLimbLocation = qfalse;
+
+	VectorSet(entYawAngles, 0, self->currentAngles[YAW], 0);
+	switch (hitLoc)
+	{
+	case HL_HEAD:
+		boltId = self->headBolt;
+		getLimbLocation = qtrue;
+		break;
+	}
+
+	if (getLimbLocation)
+	{
+		gi.G2API_GetBoltMatrix(self->ghoul2, self->playerModel, boltId,
+			&boltMatrix, entYawAngles, self->currentOrigin,
+			actualTime, NULL, self->s.modelScale);
+		gi.G2API_GiveMeVectorFromMatrix(boltMatrix, ORIGIN, limbLocation);
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+// for explosions
+void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, int damage, float dmgRadius)
+{
+	if (g_iscensored->integer)
+		return;
+
+	if (g_dismemberment->integer < 1)
+		return;
+
+	for (int i = HL_NONE; i < HL_MAX; i++)
+	{
+		vec3_t limbLoc;
+		if (hitLocOnEntityToLocation(self, i, limbLoc))
+		{
+			G_DoDismemberment(self, limbLoc, mod, damage, i, qtrue);
+		}
+	}
 }
 
 static int G_CheckSpecialDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, int hitLoc )
@@ -5603,6 +5658,8 @@ void G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, float ra
 			}
 
 			G_Damage (ent, NULL, attacker, dir, origin, (int)points, DAMAGE_RADIUS, mod);
+			if (ent->health <= 0)
+				G_DoRadiusDismemberment(ent, origin, mod, damage, radius);
 		}
 	}
 }

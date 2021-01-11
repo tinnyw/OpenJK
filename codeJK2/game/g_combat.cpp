@@ -5658,8 +5658,10 @@ void G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, float ra
 			}
 
 			G_Damage (ent, NULL, attacker, dir, origin, (int)points, DAMAGE_RADIUS, mod);
-			if (ent->health <= 0)
+			if (ent->health <= 0) // if within the blast radius to the probability checks on radius dismemberment
 				G_DoRadiusDismemberment(ent, origin, mod, damage, radius);
 		}
+		if (ignore && ignore->health <= 0) // also do explosive dismemberment on the person that was directly hit
+			G_DoRadiusDismemberment(ignore, origin, mod, damage, radius);
 	}
 }

@@ -2413,7 +2413,7 @@ qboolean hitLocOnEntityToLocation(gentity_s* self, int hitLoc, vec3_t& limbLocat
 		return qtrue;
 	}
 
-	return qfalse;
+	return qtrue;
 }
 
 // for explosions
@@ -2425,12 +2425,26 @@ void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, i
 	if (g_dismemberment->integer < 1)
 		return;
 
-	for (int i = HL_NONE; i < HL_MAX; i++)
+	const int MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT = 9;
+	int LIMBS_BY_EXREMETIES_FIRST[MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT] = {
+		HL_HAND_RT,
+		HL_HAND_LT, 
+		HL_ARM_RT,
+		HL_ARM_LT,
+		HL_FOOT_RT,
+		HL_FOOT_LT,
+		HL_LEG_RT,
+		HL_LEG_LT,
+		HL_HEAD
+	};
+
+	for (int i = 0; i < MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT; i++)
 	{
 		vec3_t limbLoc;
-		if (hitLocOnEntityToLocation(self, i, limbLoc))
+		int limbNum = LIMBS_BY_EXREMETIES_FIRST[i];
+		if (hitLocOnEntityToLocation(self, limbNum, limbLoc))
 		{
-			G_DoDismemberment(self, limbLoc, mod, damage, i, qtrue);
+			G_DoDismemberment(self, limbLoc, mod, damage, limbNum, qtrue);
 		}
 	}
 }

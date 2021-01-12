@@ -2161,10 +2161,10 @@ static qboolean G_Dismemberable( gentity_t *self, int hitLoc )
 
 static qboolean G_Dismemberable2( gentity_t *self, int hitLoc )
 {
-	if ( self->client->dismembered )
+	/*if ( self->client->dismembered )
 	{//cannot dismember me right now
 		return qfalse;
-	}
+	}*/
 	if ( g_dismemberment->integer < 11381138 && !g_saberRealisticCombat->integer )
 	{
 		if ( g_dismemberProbabilities->value <= 0.0f )
@@ -2178,15 +2178,14 @@ static qboolean G_Dismemberable2( gentity_t *self, int hitLoc )
 	return qtrue;
 }
 
-qboolean isDismemberableMod(int mod)
+
+qboolean isExplosive(int mod)
 {
 	switch (mod)
 	{
-	case MOD_SABER:
 	case MOD_ROCKET:
 	case MOD_ROCKET_ALT:
 	case MOD_REPEATER_ALT:
-	case MOD_FLECHETTE:
 	case MOD_FLECHETTE_ALT:
 	case MOD_EXPLOSIVE:
 	case MOD_EXPLOSIVE_SPLASH:
@@ -2199,6 +2198,18 @@ qboolean isDismemberableMod(int mod)
 		return qtrue;
 	}
 	return qfalse;
+}
+
+qboolean isDismemberableMod(int mod)
+{
+	switch (mod)
+	{
+	case MOD_SABER:
+	case MOD_FLECHETTE:
+	case MOD_EMPLACED:
+		return qtrue;
+	}
+	return isExplosive(mod);// all explosive mods also dismember
 }
 
 extern cvar_t* g_iscensored;
@@ -2382,8 +2393,6 @@ qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, 
 }
 
 
-
-
 qboolean hitLocOnEntityToLocation(gentity_s* self, int hitLoc, vec3_t& limbLocation)
 {
 	if (!self || !G_StandardHumanoid(self->NPC_type))
@@ -2398,6 +2407,30 @@ qboolean hitLocOnEntityToLocation(gentity_s* self, int hitLoc, vec3_t& limbLocat
 	VectorSet(entYawAngles, 0, self->currentAngles[YAW], 0);
 	switch (hitLoc)
 	{
+	case HL_HAND_RT:
+		boltId = self->handRBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_HAND_LT:
+		boltId = self->handLBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_ARM_RT:
+		boltId = self->elbowRBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_ARM_LT:
+			boltId = self->elbowLBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_LEG_RT:
+			boltId = self->kneeRBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_LEG_LT:
+			boltId = self->kneeLBolt;
+		getLimbLocation = qtrue;
+		break;
 	case HL_HEAD:
 		boltId = self->headBolt;
 		getLimbLocation = qtrue;
@@ -2413,8 +2446,14 @@ qboolean hitLocOnEntityToLocation(gentity_s* self, int hitLoc, vec3_t& limbLocat
 		return qtrue;
 	}
 
-	return qtrue;
+	return qfalse;
 }
+
+float randFloatBetweenZeroAndN(float n)
+{
+	return (float(rand()) / float((RAND_MAX)) * n);
+}
+
 
 // for explosions
 void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, int damage, float dmgRadius)
@@ -2425,14 +2464,12 @@ void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, i
 	if (g_dismemberment->integer < 1)
 		return;
 
-	const int MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT = 9;
+	const int MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT = 7;
 	int LIMBS_BY_EXREMETIES_FIRST[MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT] = {
 		HL_HAND_RT,
 		HL_HAND_LT, 
 		HL_ARM_RT,
 		HL_ARM_LT,
-		HL_FOOT_RT,
-		HL_FOOT_LT,
 		HL_LEG_RT,
 		HL_LEG_LT,
 		HL_HEAD
@@ -2444,7 +2481,8 @@ void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, i
 		int limbNum = LIMBS_BY_EXREMETIES_FIRST[i];
 		if (hitLocOnEntityToLocation(self, limbNum, limbLoc))
 		{
-			G_DoDismemberment(self, limbLoc, mod, damage, limbNum, qtrue);
+			if (Distance(explosionCenter, limbLoc) < randFloatBetweenZeroAndN(dmgRadius* dmgRadius))
+				G_DoDismemberment(self, limbLoc, mod, damage, limbNum, qtrue);
 		}
 	}
 }
@@ -3483,7 +3521,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		else
 		{
 			anim = G_PickDeathAnim( self, self->pos1, damage, meansOfDeath, hitLoc );
-			if ( /*dflags & DAMAGE_DISMEMBER*/ isDismemberableMod(meansOfDeath) )
+			if ( /*dflags & DAMAGE_DISMEMBER*/ isDismemberableMod(meansOfDeath) && !isExplosive(meansOfDeath) ) //explosive dismemberment is handled in the actual radius damage code
 			{
 				G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc );
 			}

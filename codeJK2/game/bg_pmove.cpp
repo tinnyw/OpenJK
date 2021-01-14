@@ -8128,7 +8128,7 @@ static qboolean PM_CanShootDodge()
 	if (!(pm->cmd.buttons & BUTTON_ALT_ATTACK))
 		return qfalse;
 
-	if (pm->ps->ping) // have shoot dodge toggled off
+	if (pm->ps->shootDodgeToggled) // have shoot dodge toggled off
 		return qfalse;
 
 	if (!cg.renderingThirdPerson) // right now only supporting third person

@@ -798,6 +798,9 @@ static void CG_DrawHUD( centity_t *cent )
 		CG_DrawMessageLit(cent,x,y);
 		CG_DrawHUDRightFrame2(x,y);
 	}
+
+	if (PM_IsShootdodgeWeapon(cent->currentState.weapon) && cent->gent->client->ps.shootDodgeToggled)
+		CG_DrawPic(575, 350, 40, 40, cgs.media.shootDodgeToggle);
 }
 
 /*
@@ -1688,7 +1691,6 @@ CG_ScanForCrosshairEntity
 =================
 */
 extern float forcePushPullRadius[];
-extern qboolean PM_IsShootdodgeWeapon(int weapon);
 static void CG_ScanForCrosshairEntity( qboolean scanAll ) 
 {
 	trace_t		trace;

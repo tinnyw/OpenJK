@@ -307,7 +307,7 @@ void Svcmd_SaberAttackCycle_f( void )
 	// if using saber cycle with a shoot dodge weapon toggle whether or not shoot dodge should be activated
 	if (PM_IsShootdodgeWeapon(self->s.weapon))
 	{
-		self->client->ps.ping = ~self->client->ps.ping;
+		self->client->ps.shootDodgeToggled = ~self->client->ps.shootDodgeToggled;
 		return;
 	}
 

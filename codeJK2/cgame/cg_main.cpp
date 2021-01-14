@@ -1757,6 +1757,8 @@ void CG_Init( int serverCommandSequence ) {
 		"gfx/hud/f_icon_saber_attack",
 	};
 
+	cgs.media.shootDodgeToggle = cgi_R_RegisterShaderNoMip("gfx/hud/sharon_clock");
+
 	// Precache inventory icons
 	for ( int i=0;i<NUM_FORCE_POWERS;i++)
 	{

@@ -2226,7 +2226,7 @@ qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, 
 	if ( !g_iscensored->integer && ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && isDismemberableMod(mod) )//only lightsaber, or other heavy weapons
 #endif
 	{//FIXME: don't do strcmps here
-		if ( G_StandardHumanoid( self->NPC_type )
+		if ( G_StandardHumanoid( self->NPC_type ) && (mod == WP_SABER || (self && self->client && self->client->NPC_class == CLASS_PROTOCOL)) //let's keep it pg, only heavy weapons dismember droids
 			&& (force||g_dismemberProbabilities->value>0.0f||G_Dismemberable2( self, hitLoc )) )
 		{//either it's a forced dismemberment or we're using probabilities (which are checked before this) or we've done enough damage to this location
 			//FIXME: check the hitLoc and hitDir against the cap tag for the place
@@ -2449,11 +2449,6 @@ qboolean hitLocOnEntityToLocation(gentity_s* self, int hitLoc, vec3_t& limbLocat
 	return qfalse;
 }
 
-float randFloatBetweenZeroAndN(float n)
-{
-	return (float(rand()) / float((RAND_MAX)) * n);
-}
-
 
 // for explosions
 void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, int damage, float dmgRadius)
@@ -2481,7 +2476,7 @@ void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, i
 		int limbNum = LIMBS_BY_EXREMETIES_FIRST[i];
 		if (hitLocOnEntityToLocation(self, limbNum, limbLoc))
 		{
-			if (Distance(explosionCenter, limbLoc) < randFloatBetweenZeroAndN(dmgRadius* dmgRadius))
+			if ((dmgRadius-Distance(explosionCenter, limbLoc)) / dmgRadius > .4f)
 				G_DoDismemberment(self, limbLoc, mod, damage, limbNum, qtrue);
 		}
 	}
@@ -4273,8 +4268,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 	}
 
-	//do any dismemberment if there's any to do...
-	if ( /*(dflags&DAMAGE_DISMEMBER) &&*/ G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc ) && !specialAnim )
+	//do any dismemberment if there's any to do..., explosive dismemberment handled in radius damage
+	if ( !isExplosive(meansOfDeath) && /*(dflags&DAMAGE_DISMEMBER) &&*/ G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc ) && !specialAnim )
 	{//we did dismemberment and our death anim is okay to override
 		if ( hitLoc == HL_HAND_RT && self->locationDamage[hitLoc] >= Q3_INFINITE && cliff_fall != 2 && self->client->ps.groundEntityNum != ENTITYNUM_NONE )
 		{//just lost our right hand and we're on the ground, use the special anim
@@ -5554,7 +5549,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	if (targ && targ->client && targ->health <= 0)
+	if (targ && targ->client && targ->health <= 0 && !isExplosive(mod))
 	{
 		G_DoDismemberment(targ, point, mod, damage, hitLoc, qtrue);
 	}

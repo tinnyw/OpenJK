@@ -2437,6 +2437,21 @@ static qboolean PM_TryRoll( void )
 	else
 	{//???
 	}
+
+	// if you're in a shoot dodge but your moving direction is not aligning with your movement anim, don't roll, change at force jump level 1 and up that you can
+	// roll in any direction after a shoot dodge
+	if (PM_InShootDodge(pm->ps) && pm->ps->forcePowerLevel[FP_LEVITATION] < FORCE_LEVEL_1)
+	{
+		if (pm->cmd.forwardmove > 0 && pm->ps->legsAnim != BOTH_SHOOTDODGE_F)
+			anim = -1;
+		else if (pm->cmd.forwardmove < 0 && pm->ps->legsAnim != BOTH_SHOOTDODGE_B)
+			anim = -1;
+		else if (pm->cmd.rightmove > 0 && pm->ps->legsAnim != BOTH_SHOOTDODGE_R)
+			anim = -1;
+		else if (pm->cmd.rightmove < 0 && pm->ps->legsAnim != BOTH_SHOOTDODGE_L)
+			anim = -1;
+	}
+
 	if ( anim != -1 )
 	{
 		qboolean roll = qfalse;

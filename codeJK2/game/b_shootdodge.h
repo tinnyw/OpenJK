@@ -53,6 +53,9 @@ extern qboolean canShootDodgeFromWallrun;
 // WP_DEMP
 #define SHOOT_DODGE_DEMP_CHARGE_REDUCTION SHOOT_DODGE_TIME_DILATION * .35f
 
+// WP_ROCKET
+#define ROCKET_LOCKTIME 800
+
 
 
 

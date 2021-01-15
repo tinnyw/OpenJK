@@ -8190,7 +8190,7 @@ static void PM_ShootDodge()
 
 	g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
 	pm->ps->velocity[2] += JUMP_VELOCITY * 5 / 4; // start jumping
-	G_SoundOnEnt(pm->gent, CHAN_VOICE, "sound/shoot_dodge/bassbullettime8db.mp3"); // sound effect
+	G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8db.mp3"); // warp sound effect
 
 	// set the anims - first the torso weapon anims
 	switch (pm->ps->weapon)
@@ -8213,6 +8213,10 @@ static void PM_ShootDodge()
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_L, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 	else
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_R, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+
+	cgi_S_StartSound(pm->ps->origin, pm->ps->clientNum, CHAN_AMBIENT, G_SoundIndex("sound/shoot_dodge/bullettimeloop"));
+	pm->gent->s.loopSound = G_SoundIndex("sound/shoot_dodge/bullettimeloop"); //also start whoosh loop sound
+	cgi_S_AddLoopingSound(pm->ps->clientNum, pm->ps->origin, vec3_origin, cgi_S_RegisterSound("sound/shoot_dodge/bullettimeloop.mp3"));
 		
 	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in appropriate direction
 }
@@ -8220,7 +8224,11 @@ static void PM_ShootDodge()
 static void PM_StopShootDodge()
 {
 	if (g_timescale->value < 1.0f)
+	{
 		g_timescale->value = getForceSpeedTimeDilation(pm->ps);
+		pm->gent->s.loopSound = 0;
+		G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8dbreversed.mp3"); // sound effect
+	}
 }
 
 /*
@@ -8868,7 +8876,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	}
 
 	// if not in shoot dodge anymore set timescale back to 1 and stop shoot dodge
-	if (!PM_InShootDodgeInAir(pm->ps) && pm->ps->clientNum == 0) {
+	if (!PM_InShootDodgeInAir(pm->ps) && pm->ps->clientNum == 0)
+	{
 		PM_StopShootDodge();
 	}
 

@@ -1605,6 +1605,14 @@ qboolean CG_WorldCoordToScreenCoord( vec3_t worldCoord, int *x, int *y ) {
 	return qfalse;
 }
 
+float getRocketLockTimeWithShootDodgeTimeDilation()
+{
+	gentity_t* player = &g_entities[0];
+	float shootDodgeDilation = getShootDodgeTimeDilation(&player->client->ps);
+
+	return (float)ROCKET_LOCKTIME * shootDodgeDilation;
+}
+
 // I'm keeping the rocket tracking code separate for now since I may want to do different logic...but it still uses trace info from scanCrosshairEnt
 //-----------------------------------------
 static void CG_ScanForRocketLock( void )
@@ -1619,7 +1627,7 @@ static void CG_ScanForRocketLock( void )
 			|| ( traceEnt && traceEnt->client && traceEnt->client->ps.powerups[PW_CLOAKED] ))
 	{
 		// see how much locking we have
-		int dif = ( cg.time - g_rocketLockTime ) / ( 1200.0f / 8.0f );
+		int dif = ( cg.time - g_rocketLockTime ) / (getRocketLockTimeWithShootDodgeTimeDilation() / 8.0f );
 
 		// 8 is full locking....also if we just traced onto the world, 
 		//	give them 1/2 second of slop before dropping the lock
@@ -1642,9 +1650,9 @@ static void CG_ScanForRocketLock( void )
 		{
 			tempLock = qtrue;
 
-			if ( g_rocketLockTime + 1200 < cg.time )
+			if ( g_rocketLockTime + getRocketLockTimeWithShootDodgeTimeDilation() < cg.time )
 			{
-				g_rocketLockTime = cg.time - 1200; // doh, hacking the time so the targetting still gets drawn full
+				g_rocketLockTime = cg.time - getRocketLockTimeWithShootDodgeTimeDilation(); // doh, hacking the time so the targetting still gets drawn full
 			}
 		} 		
 
@@ -2004,9 +2012,9 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 		vec4_t color={0.0f,0.0f,0.0f,0.0f};
 
 		cy += sz * 0.5f;
-		
+
 		// well now, take our current lock time and divide that by 8 wedge slices to get the current lock amount
-		int dif = ( cg.time - g_rocketLockTime ) / ( 1200.0f / 8.0f );
+		int dif = ( cg.time - g_rocketLockTime ) / ( getRocketLockTimeWithShootDodgeTimeDilation() / 8.0f );
 
 		if ( dif < 0 )
 		{

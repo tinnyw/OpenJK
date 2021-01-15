@@ -223,6 +223,8 @@ void CG_RegisterWeapon( int weaponNum ) {
 		weaponInfo->alt_missileTrailFunc = (void (QDECL *)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].altfunc;
 	}
 
+	cgi_S_RegisterSound("sound/shoot_dodge/bullettimeloop.mp3");
+
 	switch ( weaponNum )	//extra client only stuff
 	{
 	case WP_SABER:

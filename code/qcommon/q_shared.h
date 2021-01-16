@@ -2053,6 +2053,8 @@ public:
 		saved_game.write<int32_t>(taunting);
 		saved_game.write<float>(jumpZStart);
 		saved_game.write<float>(moveDir);
+		saved_game.write<float>(shootDodgeDir);
+		saved_game.write<int16_t>(shootDodgeToggled);
 		saved_game.write<float>(waterheight);
 		saved_game.write<int32_t>(waterHeightLevel);
 
@@ -2222,6 +2224,8 @@ public:
 		saved_game.read<int32_t>(taunting);
 		saved_game.read<float>(jumpZStart);
 		saved_game.read<float>(moveDir);
+		saved_game.read<float>(shootDodgeDir);
+		saved_game.read<int16_t>(shootDodgeToggled);
 		saved_game.read<float>(waterheight);
 		saved_game.read<int32_t>(waterHeightLevel);
 

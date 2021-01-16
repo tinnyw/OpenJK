@@ -960,7 +960,7 @@ static qboolean PM_CheckJump( void )
 				switch ( anim )
 				{
 				case BOTH_WALL_FLIP_LEFT:
-					//contents |= CONTENTS_BODY;
+					contents |= CONTENTS_BODY;
 					//NOTE: purposely falls through to next case!
 				case BOTH_WALL_RUN_LEFT:
 					doTrace = qtrue;
@@ -968,7 +968,7 @@ static qboolean PM_CheckJump( void )
 					break;
 
 				case BOTH_WALL_FLIP_RIGHT:
-					//contents |= CONTENTS_BODY;
+					contents |= CONTENTS_BODY;
 					//NOTE: purposely falls through to next case!
 				case BOTH_WALL_RUN_RIGHT:
 					doTrace = qtrue;
@@ -976,7 +976,7 @@ static qboolean PM_CheckJump( void )
 					break;
 
 				case BOTH_WALL_FLIP_BACK1:
-					//contents |= CONTENTS_BODY;
+					contents |= CONTENTS_BODY;
 					doTrace = qtrue;
 					VectorMA( pm->ps->origin, 16, fwd, traceto );
 					break;
@@ -1246,7 +1246,7 @@ static qboolean PM_CheckJump( void )
 					VectorNormalize( idealNormal );
 					gentity_t *traceEnt = &g_entities[trace.entityNum];
 
-					if ( trace.fraction < 1.0f&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
+ 					if ( trace.fraction < 1.0f&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
 					{//there is a wall there
 						pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
 						VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );

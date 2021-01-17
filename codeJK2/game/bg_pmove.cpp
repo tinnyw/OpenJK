@@ -1241,12 +1241,12 @@ static qboolean PM_CheckJump( void )
 					AngleVectors( fwdAngles, fwd, NULL, NULL );
 					VectorMA( pm->ps->origin, 32, fwd, traceto );
 
-					pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, CONTENTS_SOLID, G2_NOCOLLIDE, 0 );//FIXME: clip brushes too?
+					pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, CONTENTS_SOLID|CONTENTS_BODY, G2_NOCOLLIDE, 0 );//FIXME: clip brushes too?
 					VectorSubtract( pm->ps->origin, traceto, idealNormal );
 					VectorNormalize( idealNormal );
 					gentity_t *traceEnt = &g_entities[trace.entityNum];
 
- 					if ( trace.fraction < 1.0f&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
+ 					if ( (trace.fraction < 1.0f&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) ) || (traceEnt && traceEnt->client))
 					{//there is a wall there
 						pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
 						VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
@@ -1257,12 +1257,27 @@ static qboolean PM_CheckJump( void )
 						{
 							parts = SETANIM_BOTH;
 						}
-						PM_SetAnim( pm, parts, BOTH_WALL_FLIP_BACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+ 						PM_SetAnim( pm, parts, BOTH_WALL_FLIP_BACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
 						pm->ps->forceJumpZStart = pm->ps->origin[2];//so we don't take damage if we land at same height
 						pm->ps->pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
 						pm->cmd.upmove = 0;
 						G_SoundOnEnt( pm->gent, CHAN_BODY, "sound/weapons/force/jump.wav" );
 						WP_ForcePowerDrain( pm->gent, FP_LEVITATION, 0 );
+
+						if (pm->gent && trace.entityNum < ENTITYNUM_WORLD)
+						{
+							if (traceEnt && traceEnt->client && traceEnt->health > 0 && traceEnt->takedamage)
+							{//push them away and do pain
+								vec3_t oppDir;
+								float strength = VectorNormalize2(pm->ps->velocity, oppDir) / 2.0f;
+								VectorScale(oppDir, -1, oppDir);
+								//FIXME: need knockdown anim
+								G_Damage(traceEnt, pm->gent, pm->gent, oppDir, traceEnt->currentOrigin, 10, DAMAGE_NO_ARMOR | DAMAGE_NO_HIT_LOC | DAMAGE_NO_KNOCKBACK, MOD_MELEE);
+								NPC_SetAnim(traceEnt, SETANIM_BOTH, BOTH_KNOCKDOWN2, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+								G_Throw(traceEnt, oppDir, strength);
+								G_Sound(traceEnt, G_SoundIndex(va("sound/weapons/melee/punch%d", Q_irand(1, 4))));
+							}
+						}
 					}
 				}
 			}

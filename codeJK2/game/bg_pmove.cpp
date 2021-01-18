@@ -599,6 +599,21 @@ qboolean PM_GentCantJump( gentity_t *gent )
 	}
 	return qfalse;
 }
+extern void G_Knockdown(gentity_t* self, gentity_t* attacker, vec3_t pushDir, float strength, qboolean breakSaberLock);
+// new method for dealing damage to people being flip kicked and doing the knockdown animations
+void doFlipKickKnockBackAndDamage(gentity_t* kicker, gentity_t* kickedEnt, float strengthModifier = 1.0f)
+{
+	if (kickedEnt && kickedEnt->client && kickedEnt->health > 0 && kickedEnt->takedamage)
+	{//push them away and do pain
+		vec3_t oppDir;
+		float strength = VectorNormalize2(pm->ps->velocity, oppDir) * strengthModifier;
+		VectorScale(oppDir, -1, oppDir);
+		G_Damage(kickedEnt, pm->gent, pm->gent, oppDir, kickedEnt->currentOrigin, 10, DAMAGE_NO_ARMOR | DAMAGE_NO_HIT_LOC | DAMAGE_NO_KNOCKBACK, MOD_MELEE);
+		G_Knockdown(kickedEnt, kicker, oppDir, strength, qfalse);// do the anim
+		G_Throw(kickedEnt, oppDir, strength);
+		G_Sound(kickedEnt, G_SoundIndex(va("sound/weapons/melee/punch%d", Q_irand(1, 4))));
+	}
+}
 
 static qboolean PM_CheckJump( void )
 {
@@ -1073,19 +1088,7 @@ static qboolean PM_CheckJump( void )
 						if ( doTrace && anim != BOTH_WALL_RUN_LEFT && anim != BOTH_WALL_RUN_RIGHT )
 						{
 							if ( pm->gent && trace.entityNum < ENTITYNUM_WORLD )
-							{
-								if ( traceEnt && traceEnt->client && traceEnt->health > 0 && traceEnt->takedamage )
-								{//push them away and do pain
-									vec3_t oppDir;
-									float strength = VectorNormalize2( pm->ps->velocity, oppDir );
-									VectorScale( oppDir, -1, oppDir );
-									//FIXME: need knockdown anim
-									G_Damage( traceEnt, pm->gent, pm->gent, oppDir, traceEnt->currentOrigin, 10, DAMAGE_NO_ARMOR|DAMAGE_NO_HIT_LOC|DAMAGE_NO_KNOCKBACK, MOD_MELEE );
-									NPC_SetAnim( traceEnt, SETANIM_BOTH, BOTH_KNOCKDOWN2, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-									G_Throw( traceEnt, oppDir, strength );
-									G_Sound( traceEnt, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );
-								}
-							}
+								doFlipKickKnockBackAndDamage(&g_entities[pm->ps->clientNum], traceEnt);
 						}
 						//up
 						if ( vertPush )
@@ -1265,19 +1268,7 @@ static qboolean PM_CheckJump( void )
 						WP_ForcePowerDrain( pm->gent, FP_LEVITATION, 0 );
 
 						if (pm->gent && trace.entityNum < ENTITYNUM_WORLD)
-						{
-							if (traceEnt && traceEnt->client && traceEnt->health > 0 && traceEnt->takedamage)
-							{//push them away and do pain
-								vec3_t oppDir;
-								float strength = VectorNormalize2(pm->ps->velocity, oppDir) / 2.0f;
-								VectorScale(oppDir, -1, oppDir);
-								//FIXME: need knockdown anim
-								G_Damage(traceEnt, pm->gent, pm->gent, oppDir, traceEnt->currentOrigin, 10, DAMAGE_NO_ARMOR | DAMAGE_NO_HIT_LOC | DAMAGE_NO_KNOCKBACK, MOD_MELEE);
-								NPC_SetAnim(traceEnt, SETANIM_BOTH, BOTH_KNOCKDOWN2, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
-								G_Throw(traceEnt, oppDir, strength);
-								G_Sound(traceEnt, G_SoundIndex(va("sound/weapons/melee/punch%d", Q_irand(1, 4))));
-							}
-						}
+							doFlipKickKnockBackAndDamage(&g_entities[pm->ps->clientNum], traceEnt, 0.5f);
 					}
 				}
 			}

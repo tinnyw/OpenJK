@@ -15,6 +15,9 @@ float getForceSpeedTimeDilation(playerState_t* ps);
 float getShootDodgeTimeDilation(playerState_t* ps);
 float getAllTimeDilation(playerState_t* ps);
 
+//rocket
+float getRocketLockTimeWithShootDodgeTimeDilation(void);
+
 // bg_angles tells bg_pmove that the appropriate buttons are pressed for diving from running on walls
 extern qboolean canShootDodgeFromWallrun;
 
@@ -54,7 +57,7 @@ extern qboolean canShootDodgeFromWallrun;
 #define SHOOT_DODGE_DEMP_CHARGE_REDUCTION SHOOT_DODGE_TIME_DILATION * .35f
 
 // WP_ROCKET
-#define ROCKET_LOCKTIME 800
+#define ROCKET_LOCKTIME 800.0f
 
 
 

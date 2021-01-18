@@ -8220,9 +8220,9 @@ static void PM_ShootDodge()
 	else
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_R, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 
-	cgi_S_StartSound(pm->ps->origin, pm->ps->clientNum, CHAN_AMBIENT, G_SoundIndex("sound/shoot_dodge/bullettimeloop"));
+	/*cgi_S_StartSound(pm->ps->origin, pm->ps->clientNum, CHAN_AMBIENT, G_SoundIndex("sound/shoot_dodge/bullettimeloop"));
 	pm->gent->s.loopSound = G_SoundIndex("sound/shoot_dodge/bullettimeloop"); //also start whoosh loop sound
-	cgi_S_AddLoopingSound(pm->ps->clientNum, pm->ps->origin, vec3_origin, cgi_S_RegisterSound("sound/shoot_dodge/bullettimeloop.mp3"));
+	cgi_S_AddLoopingSound(pm->ps->clientNum, pm->ps->origin, vec3_origin, cgi_S_RegisterSound("sound/shoot_dodge/bullettimeloop.mp3"));*/
 		
 	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in appropriate direction
 }

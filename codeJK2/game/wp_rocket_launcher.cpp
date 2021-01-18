@@ -147,7 +147,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 	int		damage	= weaponData[WP_ROCKET_LAUNCHER].damage;
 	float	vel = ROCKET_VELOCITY;
 
-	if ( alt_fire )
+	if ( alt_fire && !PM_InShootDodge(&ent->client->ps) )
 	{
 		vel *= 0.5f;
 	}
@@ -195,7 +195,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 		if ( (lockEntNum > 0 || (ent->NPC && lockEntNum >= 0)) && lockEntNum < ENTITYNUM_WORLD && lockTime > 0 )
 		{
 			// take our current lock time and divide that by 8 wedge slices to get the current lock amount
-			int dif = ( level.time - lockTime ) / ( (getRocketLockTimeWithShootDodgeTimeDilation()) / 8.0f );
+			int dif = ( level.time - lockTime ) / ( (getRocketLockTimeWithShootDodgeTimeDilation(&ent->client->ps)) / 8.0f );
 
 			if ( dif < 0 )
 			{

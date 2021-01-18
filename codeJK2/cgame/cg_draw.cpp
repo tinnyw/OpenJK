@@ -1605,10 +1605,9 @@ qboolean CG_WorldCoordToScreenCoord( vec3_t worldCoord, int *x, int *y ) {
 	return qfalse;
 }
 
-float getRocketLockTimeWithShootDodgeTimeDilation()
+float getRocketLockTimeWithShootDodgeTimeDilation(playerState_t* ps)
 {
-	gentity_t* player = &g_entities[0];
-	float shootDodgeDilation = getShootDodgeTimeDilation(&player->client->ps);
+	float shootDodgeDilation = getShootDodgeTimeDilation(ps);
 
 	return (float)ROCKET_LOCKTIME * shootDodgeDilation;
 }
@@ -1627,7 +1626,7 @@ static void CG_ScanForRocketLock( void )
 			|| ( traceEnt && traceEnt->client && traceEnt->client->ps.powerups[PW_CLOAKED] ))
 	{
 		// see how much locking we have
-		int dif = ( cg.time - g_rocketLockTime ) / (getRocketLockTimeWithShootDodgeTimeDilation() / 8.0f );
+		int dif = ( cg.time - g_rocketLockTime ) / (getRocketLockTimeWithShootDodgeTimeDilation(&cg.snap->ps) / 8.0f );
 
 		// 8 is full locking....also if we just traced onto the world, 
 		//	give them 1/2 second of slop before dropping the lock
@@ -1650,9 +1649,9 @@ static void CG_ScanForRocketLock( void )
 		{
 			tempLock = qtrue;
 
-			if ( g_rocketLockTime + getRocketLockTimeWithShootDodgeTimeDilation() < cg.time )
+			if ( g_rocketLockTime + getRocketLockTimeWithShootDodgeTimeDilation(&cg.snap->ps) < cg.time )
 			{
-				g_rocketLockTime = cg.time - getRocketLockTimeWithShootDodgeTimeDilation(); // doh, hacking the time so the targetting still gets drawn full
+				g_rocketLockTime = cg.time - getRocketLockTimeWithShootDodgeTimeDilation(&cg.snap->ps); // doh, hacking the time so the targetting still gets drawn full
 			}
 		} 		
 
@@ -2014,7 +2013,7 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 		cy += sz * 0.5f;
 
 		// well now, take our current lock time and divide that by 8 wedge slices to get the current lock amount
-		int dif = ( cg.time - g_rocketLockTime ) / ( getRocketLockTimeWithShootDodgeTimeDilation() / 8.0f );
+		int dif = ( cg.time - g_rocketLockTime ) / ( getRocketLockTimeWithShootDodgeTimeDilation(&cg.snap->ps) / 8.0f );
 
 		if ( dif < 0 )
 		{

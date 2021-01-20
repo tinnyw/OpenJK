@@ -571,7 +571,7 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 	}
 	else
 	{
-		// in third person and you're the player
+		// in third person and you're the player, do more acurate aiming based on where the crosshair is pointing
 		if (cg.renderingThirdPerson && ent->s.number == 0) 
 		{
 			trace_t		trace;

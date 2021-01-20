@@ -5804,10 +5804,6 @@ static void PM_FinishWeaponChange( void ) {
 		if ( pm->gent )
 		{
 			WP_SaberInitBladeData( pm->gent );
-			if ( !pm->ps->clientNum && cg_saberAutoThird.value )
-			{
-				gi.cvar_set( "cg_thirdperson", "1" );
-			}
 		}
 		if ( trueSwitch )
 		{//actually did switch weapons, play anim
@@ -5843,10 +5839,6 @@ static void PM_FinishWeaponChange( void ) {
 		else
 		{
 			PM_SetAnim(pm,SETANIM_TORSO,TORSO_RAISEWEAP1,SETANIM_FLAG_HOLD);
-		}
-		if ( !pm->ps->clientNum && cg_gunAutoFirst.value && oldWeap == WP_SABER && weapon != WP_NONE )
-		{
-			gi.cvar_set( "cg_thirdperson", "0" );
 		}
 		pm->ps->saberMove = LS_NONE;
 		pm->ps->saberBlocking = BLK_NO;

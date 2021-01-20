@@ -1705,15 +1705,6 @@ extern void CG_ChangeWeapon( int num );
 		{
 			//might be NONE, so check if it has a model
 			G_CreateG2AttachedWeaponModel( ent, weaponData[ent->client->ps.weapon].weaponMdl );
-
-			if ( ent->client->ps.weapon == WP_SABER && cg_saberAutoThird.value )
-			{
-				gi.cvar_set( "cg_thirdperson", "1" );
-			}
-			else if ( ent->client->ps.weapon != WP_SABER && cg_gunAutoFirst.value )
-			{
-				gi.cvar_set( "cg_thirdperson", "0" );
-			}
 		}
 	}
 

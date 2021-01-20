@@ -1824,6 +1824,11 @@ void CG_DrawWeaponSelect( void )
 	vec4_t	calcColor;
 	vec4_t	textColor = { .875f, .718f, .121f, 1.0f };
 
+	if (!cg_drawHUD.integer)
+	{
+		return;
+	}
+
 	if (!cgi_UI_GetMenuInfo("weaponselecthud",&x2,&y2))
 	{
 		return;

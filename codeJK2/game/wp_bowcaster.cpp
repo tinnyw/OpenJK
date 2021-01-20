@@ -44,6 +44,21 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 	VectorCopy( wpMuzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
+
+
+	float shootDodgeSpreadModifier = 1.0f;
+	float shootDodgeDmgModifier = 1.0f;
+	float shootDodgeVelModifier = 1.0f;
+	float shootDodgeChargeModifier = 1.0f;
+	// add some slop to the alt-fire direction
+	if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
+	{
+		shootDodgeSpreadModifier = SHOOT_DODGE_BOWCASTER_SPREAD_MODIFIER;
+		shootDodgeDmgModifier = SHOOT_DODGE_BOWCASTER_DAMAGE_MODIFIER;
+		shootDodgeVelModifier = SHOOT_DODGE_BOWCASTER_VELOCITY_MODIFIER;
+		shootDodgeChargeModifier = SHOOT_DODGE_BOWCASTER_CHARGE_REDUCTION;
+	}
+
 	// Do the damages
 	if ( ent->s.number != 0 )
 	{
@@ -61,7 +76,7 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 		}
 	}
 
-	count = ( level.time - ent->client->ps.weaponChargeTime ) / BOWCASTER_CHARGE_UNIT;
+	count = ( level.time - ent->client->ps.weaponChargeTime ) / (BOWCASTER_CHARGE_UNIT * shootDodgeChargeModifier);
 
 	if ( count < 1 )
 	{
@@ -83,17 +98,6 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 //		// in overcharge mode, so doing double damage
 //		damage *= 2;
 //	}
-
-	float shootDodgeSpreadModifier = 1.0f;
-	float shootDodgeDmgModifier = 1.0f;
-	float shootDodgeVelModifier = 1.0f;
-	// add some slop to the alt-fire direction
-	if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
-	{
-		shootDodgeSpreadModifier = SHOOT_DODGE_BOWCASTER_SPREAD_MODIFIER;
-		shootDodgeDmgModifier = SHOOT_DODGE_BOWCASTER_DAMAGE_MODIFIER;
-		shootDodgeVelModifier = SHOOT_DODGE_BOWCASTER_VELOCITY_MODIFIER;
-	}
 
 	for ( int i = 0; i < count; i++ )
 	{

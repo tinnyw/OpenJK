@@ -7895,8 +7895,12 @@ static int PM_DoChargingAmmoUsage( int *amount )
 
 	if ( pm->ps->weapon == WP_BOWCASTER && !( pm->cmd.buttons & BUTTON_ALT_ATTACK ))
 	{
+		float shootDodgeBowcasterChargeReductionModifier = 1.0f;
+		if (PM_InShootDodgeInAir(pm->ps))
+			shootDodgeBowcasterChargeReductionModifier = SHOOT_DODGE_BOWCASTER_CHARGE_REDUCTION;
+
 		// this code is duplicated ( I know, I know ) in G_weapon.cpp for the bowcaster alt-fire
-		count = ( level.time - pm->ps->weaponChargeTime ) / BOWCASTER_CHARGE_UNIT;
+		count = ( level.time - pm->ps->weaponChargeTime ) / (BOWCASTER_CHARGE_UNIT * shootDodgeBowcasterChargeReductionModifier);
 
 		if ( count < 1 )
 		{
@@ -7930,7 +7934,7 @@ static int PM_DoChargingAmmoUsage( int *amount )
 				}
 
 				// now get a real chargeTime so the duplicated code in g_weapon doesn't get freaked
-				pm->ps->weaponChargeTime = level.time - ( count * BOWCASTER_CHARGE_UNIT );
+				pm->ps->weaponChargeTime = level.time - ( count * BOWCASTER_CHARGE_UNIT * shootDodgeBowcasterChargeReductionModifier);
 			}
 		}
 

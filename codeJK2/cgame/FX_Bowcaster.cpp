@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
+#include "../game/b_shootdodge.h"
 
 /*
 ---------------------------
@@ -57,6 +58,14 @@ void FX_BowcasterProjectileThink( centity_t *cent, const struct weaponInfo_s *we
 		float scale = ( dif / 75.0f ) * 0.95f + 0.05f;
 
 		VectorScale( forward, scale, forward );
+	}
+
+	if (cent && cent->gent && cent->gent->owner && PM_InShootDodgeInAir(&cent->gent->owner->client->ps))
+	{
+		vec3_t shootDodgeBowcasterFXOrigin;
+		VectorMA(cent->lerpOrigin, SHOOT_DODGE_BOWCASTER_PROJECTILE_CLIENT_OFFSET, forward, shootDodgeBowcasterFXOrigin);
+		theFxScheduler.PlayEffect(cgs.effects.bowcasterShotEffect, shootDodgeBowcasterFXOrigin, forward);
+		return;
 	}
 
 	theFxScheduler.PlayEffect( cgs.effects.bowcasterShotEffect, cent->lerpOrigin, forward );

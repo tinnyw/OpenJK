@@ -45,7 +45,7 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 
 	int velocity = REPEATER_VELOCITY;
 	if (ent->client && PM_InShootDodge(&ent->client->ps))
-		velocity *= SHOOT_DODGE_REPEATER_SPEED_EXTRA_MODIFIER;
+		velocity *= SHOOT_DODGE_REPEATER_VELOCITY_MODIFIER;
 
 	gentity_t *missile = CreateMissile( start, dir, velocity, 10000, ent );
 

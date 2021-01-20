@@ -62,8 +62,8 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 	// add some slop to the alt-fire direction
 	if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
 	{
-		shootDodgeSpreadModifier = .4f;
-		shootDodgeDmgModifier = 1.7f;
+		shootDodgeSpreadModifier = SHOOT_DODGE_FLECHETTE_SPREAD_MODIFIER;
+		shootDodgeDmgModifier = SHOOT_DODGE_FLECHETTE_DAMAGE_MODIFIER;
 	}
 
 	for ( int i = 0; i < FLECHETTE_SHOTS; i++ )

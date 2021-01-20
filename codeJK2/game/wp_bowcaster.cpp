@@ -22,6 +22,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_headers.h"
 
 #include "b_local.h"
+#include "b_shootdodge.h"
 #include "g_local.h"
 #include "wp_saber.h"
 #include "w_local.h"
@@ -83,16 +84,27 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 //		damage *= 2;
 //	}
 
+	float shootDodgeSpreadModifier = 1.0f;
+	float shootDodgeDmgModifier = 1.0f;
+	float shootDodgeVelModifier = 1.0f;
+	// add some slop to the alt-fire direction
+	if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
+	{
+		shootDodgeSpreadModifier = SHOOT_DODGE_BOWCASTER_SPREAD_MODIFIER;
+		shootDodgeDmgModifier = SHOOT_DODGE_BOWCASTER_DAMAGE_MODIFIER;
+		shootDodgeVelModifier = SHOOT_DODGE_BOWCASTER_VELOCITY_MODIFIER;
+	}
+
 	for ( int i = 0; i < count; i++ )
 	{
 		// create a range of different velocities
-		vel = BOWCASTER_VELOCITY * ( Q_flrand(-1.0f, 1.0f) * BOWCASTER_VEL_RANGE + 1.0f );
+		vel = BOWCASTER_VELOCITY * shootDodgeVelModifier * ( Q_flrand(-1.0f, 1.0f) * BOWCASTER_VEL_RANGE + 1.0f );
 
 		vectoangles( wpFwd, angs );
 
 		// add some slop to the fire direction
-		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BOWCASTER_ALT_SPREAD * 0.2f;
-		angs[YAW]	+= ((i+0.5f) * BOWCASTER_ALT_SPREAD - count * 0.5f * BOWCASTER_ALT_SPREAD );
+		angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BOWCASTER_ALT_SPREAD * 0.2f * shootDodgeSpreadModifier;
+		angs[YAW]	+= ((i+0.5f) * BOWCASTER_ALT_SPREAD * shootDodgeSpreadModifier - count * 0.5f * BOWCASTER_ALT_SPREAD * shootDodgeSpreadModifier);
 		if ( ent->NPC )
 		{
 			angs[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f) );
@@ -114,7 +126,7 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 //			missile->flags |= FL_OVERCHARGED;
 //		}
 
-		missile->damage = damage;
+		missile->damage = damage * shootDodgeDmgModifier;
 		missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 		missile->methodOfDeath = MOD_BOWCASTER;
 		missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
@@ -137,7 +149,17 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 	VectorCopy( wpMuzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
-	gentity_t *missile = CreateMissile( start, wpFwd, BOWCASTER_VELOCITY, 10000, ent, qtrue );
+	float shootDodgeDmgModifier = 1.0f;
+	float shootDodgeVelModifier = 1.0f;
+	// add some slop to the alt-fire direction
+	if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
+	{
+		shootDodgeDmgModifier = SHOOT_DODGE_BOWCASTER_DAMAGE_MODIFIER;
+		shootDodgeVelModifier = SHOOT_DODGE_BOWCASTER_VELOCITY_MODIFIER;
+	}
+
+
+	gentity_t *missile = CreateMissile( start, wpFwd, BOWCASTER_VELOCITY * shootDodgeVelModifier, 10000, ent, qtrue );
 
 	missile->classname = "bowcaster_alt_proj";
 	missile->s.weapon = WP_BOWCASTER;
@@ -172,7 +194,7 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 	missile->s.eFlags |= EF_BOUNCE;
 	missile->bounceCount = 3;
 
-	missile->damage = damage;
+	missile->damage = damage * shootDodgeDmgModifier;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->methodOfDeath = MOD_BOWCASTER_ALT;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;

@@ -579,8 +579,8 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 		{
 			NPCInfo->touchedByPlayer = other;
 
-			// if colliding with an enemy in shootdodge but not in knock down already get knocked back
-			if (PM_InShootDodgeInAir(&other->client->ps) && !PM_InKnockDown(&self->client->ps))
+			// if colliding with an enemy in shootdodge but not in knock down already or dead get knocked back
+			if (PM_InShootDodgeInAir(&other->client->ps) && !PM_InKnockDown(&self->client->ps) && self->health > 0)
 			{
 				vec3_t tackleDir;
 				VectorSubtract(self->currentOrigin, other->currentOrigin, tackleDir);

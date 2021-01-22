@@ -1237,15 +1237,14 @@ static qboolean PM_CheckJump( void )
 				//FIXME: have to be moving... make sure it's opposite the wall... or at least forward?
 				if ( PM_HasAnimation( pm->gent, BOTH_WALL_FLIP_BACK1 ) )
 				{
-					//todo: instead of trace based, change this to proximity based/field of view based
-					vec3_t fwd, right, traceto, mins = { pm->mins[0],pm->mins[1],0 }, maxs = { pm->maxs[0],pm->maxs[1],24 }, fwdAngles = { 0, pm->ps->viewangles[YAW], 0 };
+					vec3_t fwd, traceto, mins = { pm->mins[0],pm->mins[1],0 }, maxs = { pm->maxs[0],pm->maxs[1],24 }, fwdAngles = { 0, pm->ps->viewangles[YAW], 0 };
 					trace_t	trace;
-					//qboolean doTrace = qtrue;
 					vec3_t	idealNormal;
 
 					int contents = CONTENTS_SOLID | CONTENTS_BODY;
 
-					AngleVectors( fwdAngles, fwd, right, NULL );
+					// try to look for someone or something in front of us
+					AngleVectors( fwdAngles, fwd, NULL, NULL );
 					VectorMA(pm->ps->origin, 32, fwd, traceto);
 					pm->trace(&trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, contents, G2_NOCOLLIDE, 0);
 					VectorSubtract(pm->ps->origin, traceto, idealNormal);

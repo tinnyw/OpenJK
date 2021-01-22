@@ -31,6 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/anims.h"
 #include "../game/g_functions.h"
 #include "../game/b_shootdodge.h"
+#include <chrono>
 
 #define MASK_CAMERACLIP (MASK_SOLID)
 #define CAMERA_SIZE	4
@@ -1404,17 +1405,13 @@ static qboolean	CG_CalcFov( void ) {
 				if ( cg.zoomMode == 1 )
 				{
 					// binoculars zooming either in or out
-					cg_zoomFov += cg.zoomDir * cg.frametime * 0.05f;
+					cg_zoomFov += cg.zoomDir * cg.actualClientFrameDeltaTime * 0.05f;
 				}
 				else
 				{
-					float shootDodgeTenlossChargeReductionModifier = 1.0f;
-
-					if (PM_InShootDodgeInAir(&cg_entities[0].gent->client->ps))
-						shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
-
 					// disruptor zooming in faster
-					cg_zoomFov -= (cg.frametime * 0.075f / shootDodgeTenlossChargeReductionModifier);
+					// also zooming rate is static whether you're in force speed or in shoot dodge so use actual client's system time and not cg.time
+					cg_zoomFov -= cg.actualClientFrameDeltaTime * 0.075f;
 				}
 
 				// Clamp zoomFov
@@ -1431,7 +1428,7 @@ static qboolean	CG_CalcFov( void ) {
 				{//still zooming
 					static int zoomSoundTime = 0;
 
-					if ( zoomSoundTime < cg.time )
+					if ( zoomSoundTime < cg.actualClientTime )
 					{
 						sfxHandle_t snd;
 						
@@ -1446,7 +1443,7 @@ static qboolean	CG_CalcFov( void ) {
 
 						// huh?  This could probably just be added as a looping sound??
 						cgi_S_StartSound( cg.refdef.vieworg, ENTITYNUM_WORLD, CHAN_LOCAL, snd );
-						zoomSoundTime = cg.time + 150; 
+						zoomSoundTime = cg.actualClientTime + 150;
 					}
 				}
 			}
@@ -1862,6 +1859,11 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 	if ( stereoView != STEREO_RIGHT ) {
 		cg.frametime = cg.time - cg.oldTime;
 		cg.oldTime = cg.time;
+
+		// also grab the actual client time and client time frame deltas for renderings that are independent of time dilation effects
+		int nowInMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		cg.actualClientFrameDeltaTime = nowInMilliseconds - cg.actualClientTime;
+		cg.actualClientTime = nowInMilliseconds;
 	}
 	// Make sure the helper has the updated time
 	theFxHelper.AdjustTime( cg.frametime );

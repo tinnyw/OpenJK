@@ -1244,26 +1244,16 @@ static qboolean PM_CheckJump( void )
 					int contents = CONTENTS_SOLID | CONTENTS_BODY;
 
 					// try to look for someone or something in front of us
+					vec3_t loweredOrigin;//for if you jumped a tad high
+					VectorCopy(pm->ps->origin, loweredOrigin);
+					loweredOrigin[2] -= 20;// lower origin, and closer to feet since that's where we're really tracing from for flip kicks
 					AngleVectors( fwdAngles, fwd, NULL, NULL );
-					VectorMA(pm->ps->origin, 32, fwd, traceto);
-					pm->trace(&trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, contents, G2_NOCOLLIDE, 0);
-					VectorSubtract(pm->ps->origin, traceto, idealNormal);
+					VectorMA(loweredOrigin, 32, fwd, traceto);
+					pm->trace(&trace, loweredOrigin, mins, maxs, traceto, pm->ps->clientNum, contents, G2_NOCOLLIDE, 0);
+					VectorSubtract(loweredOrigin, traceto, idealNormal);
 					VectorNormalize(idealNormal);
 
 					gentity_t *traceEnt = &g_entities[trace.entityNum];
-
-					// if we didn't have a trace of a client right in front of us, try lowering the point of origin a tad since our hip might be above them and try getting client again
-					if (!traceEnt || !traceEnt->client)
-					{
-						vec3_t loweredOrigin;//for if you jumped a tad high
-						VectorCopy(pm->ps->origin, loweredOrigin);
-						loweredOrigin[2] -= 20;// lower origin and repeate same process from before
-						VectorMA(loweredOrigin, 32, fwd, traceto);
-						pm->trace(&trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, contents, G2_NOCOLLIDE, 0);
-						VectorSubtract(pm->ps->origin, traceto, idealNormal);
-						VectorNormalize(idealNormal);
-						traceEnt = &g_entities[trace.entityNum];
-					}
 
  					if ( trace.fraction < 1.0f&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
 					{//there is a wall there

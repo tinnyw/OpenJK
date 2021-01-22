@@ -323,6 +323,9 @@ typedef struct {
 								// is rendering at.
 	int			oldTime;		// time at last frame, used for missile trails and prediction checking
 
+	int			actualClientTime;	// actual client's system time, used for rendering things irrespective of time dilation stuff going on with the server
+	int			actualClientFrameDeltaTime;	// actual client's system time delta between frames
+
 	int			timelimitWarnings;	// 5 min, 1 min, overtime
 
 	qboolean	renderingThirdPerson;		// during deaths, chasecams, etc

@@ -2272,9 +2272,9 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 
 		if ( gi.G2API_HaveWeGhoul2Models(gent->ghoul2) && gent->lowerLumbarBone != -1 )//gent->upperLumbarBone
 		{//see if we need to tell ghoul2 to play it again because of a animSpeed change
-			int		blah;
-			float	junk;
-			if (!gi.G2API_GetBoneAnimIndex( &gent->ghoul2[gent->playerModel], gent->lowerLumbarBone, actualTime, &junk, &blah, &blah, &blah, &oldAnimSpeed, NULL ))
+			int		blah = 0;
+			float	junk = .0f;
+			if (&gent->lowerLumbarBone >= 0 && !gi.G2API_GetBoneAnimIndex(&gent->ghoul2[gent->playerModel], gent->lowerLumbarBone, actualTime, &junk, &blah, &blah, &blah, &oldAnimSpeed, NULL))
 			{
 				animSpeed = oldAnimSpeed;
 			}

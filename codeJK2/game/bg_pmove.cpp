@@ -2593,9 +2593,14 @@ static void PM_CrashLand( void )
 		}
 	}
 
-	// FIXME: if duck just as you land, roll and take half damage
+	// make sure enough time has passed, if in shoot dodge, roll even if you're briefly in the air because of shoot dodge and force dilation
+	qboolean enoughTimeInAir = qfalse;
+	if (PM_InShootDodgeInAir(pm->ps))
+		enoughTimeInAir = qboolean((level.time - pm->ps->lastOnGround) > 500 * getAllTimeDilation(pm->ps));
+	else
+		enoughTimeInAir = qboolean((level.time - pm->ps->lastOnGround) > 500);
 
-	if ( (pm->ps->pm_flags&PMF_DUCKED) && (level.time-pm->ps->lastOnGround)>500 )
+	if ( (pm->ps->pm_flags&PMF_DUCKED) && enoughTimeInAir)
 	{//must be crouched and have been inthe air for half a second minimum
 		if( !PM_InOnGroundAnim( pm->ps ) && !PM_InKnockDown( pm->ps ) )
 		{//roll!
@@ -3540,6 +3545,7 @@ static void PM_CheckDuck (void)
 		pm->ps->viewheight = crouchheight + STANDARD_VIEWHEIGHT_OFFSET;
 		return;
 	}
+	// todo: move this up if you can't figure out the getup code in time
 	if ( PM_InKnockDown( pm->ps ) || PM_InShootDodge(pm->ps) )
 	{//forced crouch
 		if ( pm->gent && pm->gent->client )
@@ -3909,8 +3915,8 @@ qboolean PM_GettingUpFromKnockDown( float standheight, float crouchheight )
 		||legsAnim == BOTH_SHOOTDODGE_B
 		||legsAnim == BOTH_SHOOTDODGE_L
 		||legsAnim == BOTH_SHOOTDODGE_R)
-	{//in a knockdown
-		if ( !pm->ps->legsAnimTimer )
+	{//in a knockdown, but not in a shootdodge that's in the air
+		if ( !pm->ps->legsAnimTimer && !PM_InShootDodgeInAir(pm->ps) )
 		{
 			//done with the knockdown - FIXME: somehow this is allowing an *instant* getup...???
 			//FIXME: if trying to crouch (holding button?), just get up into a crouch?
@@ -9055,7 +9061,6 @@ static void PM_ShootDodgeAngles(pmove_t* pm)
 	vectoangles(pm->ps->shootDodgeDir, shootDodgeAngles);
 	// and now get the delta between where you're aiming and where you're dodging to
 	viewMovDiffYaw = AngleNormalize180(cg.refdefViewAngles[YAW] - shootDodgeAngles[YAW]);
-	//Com_Printf("Move yaw: %f, view yaw: %f, legsTimer: %d, diff: %f\n", movAngles[YAW], pm->ps->viewangles[YAW], pm->ps->legsAnimTimer, viewMovDiffYaw);
 
 	switch (pm->ps->legsAnim)
 	{

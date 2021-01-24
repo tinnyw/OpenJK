@@ -5689,7 +5689,7 @@ static void PM_BeginWeaponChange( int weapon ) {
 	}
 
 	pm->ps->weaponstate = WEAPON_DROPPING;
-	pm->ps->weaponTime += 200;
+	pm->ps->weaponTime += 200 * getAllTimeDilation(pm->ps);
 	if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_GALAKMECH )
 	{
 		if ( pm->gent->alt_fire )

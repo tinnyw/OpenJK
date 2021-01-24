@@ -2393,7 +2393,7 @@ void CG_Weapon_f( void )
 {
 	int		num;
 
-	if ( cg.weaponSelectTime + 200 > cg.time )
+	if ( cg.weaponSelectTime + 200 * getAllTimeDilation(&cg.snap->ps) > cg.time )
 	{
 		return;
 	}

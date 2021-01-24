@@ -1753,11 +1753,13 @@ qboolean CG_PlayerLegsYawFromMovement( centity_t *cent, const vec3_t velocity, f
 	{
 		return qfalse;
 	}
-	if ( cent->gent && cent->gent->client && cent->gent->client->ps.forcePowersActive & (1 << FP_SPEED)/* && !PM_InShootDodgeInAir(&cent->gent->client->ps) */)
+	/*
+	* Now handled in the main input controller so accounts for force speed and shoot dodge
+	if ( cent->gent && cent->gent->client && cent->gent->client->ps.forcePowersActive & (1 << FP_SPEED) && !PM_InShootDodgeInAir(&cent->gent->client->ps))
 	{//using force speed
 		//scale up the turning speed
 		turnRate /= cg_timescale.value;
-	}
+	}*/
 	//lerp the legs angle to the new angle
 	angleDiff = AngleDelta( cent->pe.legs.yawAngle, (*yaw+addAngle) );
 	newAddAngle = angleDiff*cg.frameInterpolation*-1;

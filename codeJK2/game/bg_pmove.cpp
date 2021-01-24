@@ -2533,6 +2533,8 @@ static qboolean PM_TryRoll( void )
 	return qfalse;
 }
 
+static void PM_TryStopShootDodge();
+
 /*
 =================
 PM_CrashLand
@@ -2544,6 +2546,9 @@ static void PM_CrashLand( void )
 {
 	float		delta = 0;
 	qboolean	forceLanding = qfalse;
+
+	// before anything, trigger ending of shoot dodge if you're in one
+	PM_TryStopShootDodge();
 
 	if ( pm->ps->pm_flags&PMF_TRIGGER_PUSHED )
 	{
@@ -2594,13 +2599,13 @@ static void PM_CrashLand( void )
 	}
 
 	// make sure enough time has passed, if in shoot dodge, roll even if you're briefly in the air because of shoot dodge and force dilation
-	qboolean enoughTimeInAir = qfalse;
+	qboolean enoughTimeInAirForRoll = qfalse;
 	if (PM_InShootDodgeInAir(pm->ps))
-		enoughTimeInAir = qboolean((level.time - pm->ps->lastOnGround) > 500 * getAllTimeDilation(pm->ps));
+		enoughTimeInAirForRoll = qboolean((level.time - pm->ps->lastOnGround) > 500 * getAllTimeDilation(pm->ps));
 	else
-		enoughTimeInAir = qboolean((level.time - pm->ps->lastOnGround) > 500);
+		enoughTimeInAirForRoll = qboolean((level.time - pm->ps->lastOnGround) > 500);
 
-	if ( (pm->ps->pm_flags&PMF_DUCKED) && enoughTimeInAir)
+	if ( (pm->ps->pm_flags&PMF_DUCKED) && enoughTimeInAirForRoll)
 	{//must be crouched and have been inthe air for half a second minimum
 		if( !PM_InOnGroundAnim( pm->ps ) && !PM_InKnockDown( pm->ps ) )
 		{//roll!
@@ -8233,9 +8238,10 @@ static void PM_ShootDodge()
 	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in appropriate direction
 }
 
-static void PM_StopShootDodge()
+static void PM_TryStopShootDodge()
 {
-	if (g_timescale->value < 1.0f)
+	// if time is slow and you're in a shoot dodge, stop shoot dodge dilation
+	if (g_timescale->value < 1.0f && PM_InShootDodge(pm->ps))
 	{
 		g_timescale->value = getForceSpeedTimeDilation(pm->ps);
 		G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8dbreversed.mp3"); // sound effect
@@ -8886,12 +8892,6 @@ void PM_AdjustAttackStates( pmove_t *pm )
 
 			return;
 		}
-	}
-
-	// if not in shoot dodge anymore set timescale back to 1 and stop shoot dodge
-	if (!PM_InShootDodgeInAir(pm->ps) && pm->ps->clientNum == 0)
-	{
-		PM_StopShootDodge();
 	}
 
 	// disruptor alt-fire should toggle the zoom mode, but only bother doing this for the player?

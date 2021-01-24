@@ -8883,8 +8883,6 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		}
 	}
 
-	Com_Printf("Timescale value: %f", g_timescale->value);
-
 	// if we're just now pressing the alt attack button, check to see if we can shoot dodge
 	if ((pm->cmd.buttons & BUTTON_ALT_ATTACK) && !(pm->ps->eFlags & EF_ALT_FIRING))
 	{

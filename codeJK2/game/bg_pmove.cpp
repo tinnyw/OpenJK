@@ -8232,7 +8232,6 @@ static void PM_StopShootDodge()
 	if (g_timescale->value < 1.0f)
 	{
 		g_timescale->value = getForceSpeedTimeDilation(pm->ps);
-		pm->gent->s.loopSound = 0;
 		G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8dbreversed.mp3"); // sound effect
 	}
 }
@@ -8822,7 +8821,7 @@ void PM_SetSpecialMoveValues (void )
 	{
 		if ( g_timescale->value < 1.0f )
 		{
-			if ( !MatrixMode )
+			if ( !MatrixMode && !PM_InShootDodgeInAir(pm->ps))
 			{
 				if ( pm->ps->clientNum == 0 && !player_locked && pm->ps->forcePowersActive&(1<<FP_SPEED) )
 				{
@@ -8865,6 +8864,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			pm->cmd.buttons &= ~BUTTON_ATTACK;
 		}
 	}
+
+	Com_Printf("Timescale value: %f", g_timescale->value);
 
 	// if we're just now pressing the alt attack button, check to see if we can shoot dodge
 	if ((pm->cmd.buttons & BUTTON_ALT_ATTACK) && !(pm->ps->eFlags & EF_ALT_FIRING))

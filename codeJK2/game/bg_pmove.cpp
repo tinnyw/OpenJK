@@ -8185,10 +8185,12 @@ static qboolean PM_CanShootDodge()
 	return qtrue;
 }
 
-static void PM_ShootDodge()
+// actual code to initiate shoot dodge, todo: make it take pm instead of void
+static void PM_StartShootDodge()
 {
 	vec3_t curDir;
 	float shootDodgeSpeed;
+	float originalVerticalSpeed = pm->ps->velocity[2];
 
 	// if you're starting from a wall run, make the shoot dodge direction perpendicular to where you're running
 	if (PM_IsWallRunAnimation(pm->ps->legsAnim))
@@ -8236,6 +8238,10 @@ static void PM_ShootDodge()
 	cgi_S_AddLoopingSound(pm->ps->clientNum, pm->ps->origin, vec3_origin, cgi_S_RegisterSound("sound/shoot_dodge/bullettimeloop.mp3"));*/
 		
 	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in appropriate direction
+
+	// just in case you're jumping from force level 3 and you already have vertical momentum, keep it going
+	if (pm->ps->velocity[2] < originalVerticalSpeed)
+		pm->ps->velocity[2] += originalVerticalSpeed;
 }
 
 static void PM_TryStopShootDodge()
@@ -8885,7 +8891,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		if (PM_CanShootDodge())
 		{
 			// yay, we can shoot dodge!
-			PM_ShootDodge();
+			PM_StartShootDodge();
 
 			// set flags to not fire as soon as we shootdodge
 			pm->ps->weaponTime += 50;

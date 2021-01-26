@@ -65,6 +65,9 @@ static void WP_DEMP2_MainFire( gentity_t *ent )
 		}
 	}
 
+	if (PM_InShootDodgeInAir(&ent->client->ps))
+		damage *= SHOOT_DODGE_DEMP_DAMAGE_MODIFIER;
+
 	VectorSet( missile->maxs, DEMP2_SIZE, DEMP2_SIZE, DEMP2_SIZE );
 	VectorScale( missile->maxs, -1, missile->mins );
 
@@ -107,6 +110,10 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 	}
 
 	numListedEntities = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
+
+	float shootDodgeDamageModifier = 1.0;
+	if (PM_InShootDodgeInAir(&ent->client->ps))
+		shootDodgeDamageModifier *= SHOOT_DODGE_DEMP_DAMAGE_MODIFIER;
 
 	for ( e = 0 ; e < numListedEntities ; e++ ) 
 	{
@@ -157,7 +164,7 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 		// push the center of mass higher than the origin so players get knocked into the air more
 		dir[2] += 12;
 
-		G_Damage( gent, ent, ent->owner, dir, ent->currentOrigin, weaponData[WP_DEMP2].altDamage, DAMAGE_DEATH_KNOCKBACK, ent->splashMethodOfDeath );
+		G_Damage( gent, ent, ent->owner, dir, ent->currentOrigin, weaponData[WP_DEMP2].altDamage * shootDodgeDamageModifier, DAMAGE_DEATH_KNOCKBACK, ent->splashMethodOfDeath );
 		if ( gent->takedamage && gent->client ) 
 		{
 			gent->s.powerups |= ( 1 << PW_SHOCKED );
@@ -206,9 +213,13 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
 	float shootDodgeDempChargeReductionModifier = 1.0f;
+	float shootDodgeDamageModifier = 1.0f;
 
 	if (PM_InShootDodgeInAir(&ent->client->ps))
+	{
 		shootDodgeDempChargeReductionModifier = SHOOT_DODGE_DEMP_CHARGE_REDUCTION;
+		shootDodgeDamageModifier = SHOOT_DODGE_DEMP_DAMAGE_MODIFIER;
+	}
 
 	count = ( level.time - ent->client->ps.weaponChargeTime ) / (DEMP2_CHARGE_UNIT * shootDodgeDempChargeReductionModifier);
 
@@ -222,6 +233,7 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 	}
 
 	damage *= ( 1 + ( count * ( count - 1 )));// yields damage of 12,36,84...gives a higher bonus for longer charge
+	damage *= shootDodgeDamageModifier;
 
 	// the shot can travel a whopping 4096 units in 1 second. Note that the shot will auto-detonate at 4096 units...we'll see if this looks cool or not
 

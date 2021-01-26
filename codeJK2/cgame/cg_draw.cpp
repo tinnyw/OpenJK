@@ -1131,7 +1131,7 @@ static void CG_DrawZoomMask( void )
 			float shootDodgeTenlossChargeReductionModifier = 1.0f;
 
 			if (PM_InShootDodgeInAir(&cg_entities[0].gent->client->ps))
-				shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
+				shootDodgeTenlossChargeReductionModifier = getAllTimeDilation(&cg_entities[0].gent->client->ps);
 
 			// draw the charge level
 			max = ( cg.time - cg_entities[0].gent->client->ps.weaponChargeTime ) / ( 150.0f * 10.0f * shootDodgeTenlossChargeReductionModifier); // bad hardcodedness 150 is disruptor charge unit and 10 is max charge units allowed.

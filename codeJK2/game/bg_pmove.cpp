@@ -8061,7 +8061,7 @@ static int PM_DoChargingAmmoUsage( int *amount )
 		float shootDodgeTenlossChargeReductionModifier = 1.0f;
 
 		if (PM_InShootDodgeInAir(pm->ps))
-			shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
+			shootDodgeTenlossChargeReductionModifier = getAllTimeDilation(pm->ps);
 
 		// this code is duplicated ( I know, I know ) in G_weapon.cpp for the disruptor alt-fire
 		count = ( level.time - pm->ps->weaponChargeTime ) / (DISRUPTOR_CHARGE_UNIT * shootDodgeTenlossChargeReductionModifier);

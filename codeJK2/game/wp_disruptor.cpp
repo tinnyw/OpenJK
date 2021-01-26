@@ -82,6 +82,9 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 		}
 	}
 
+	if (PM_InShootDodgeInAir(&ent->client->ps))
+		damage *= SHOOT_DODGE_BOWCASTER_DAMAGE_MODIFIER;
+
 	VectorCopy( wpMuzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );
 
@@ -205,9 +208,13 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		AngleVectors( ent->client->renderInfo.eyeAngles, wpFwd, NULL, NULL );
 
 		float shootDodgeTenlossChargeReductionModifier = 1.0f;
+		float shootDodgeTenlossDamageModifier = 1.0f;
 
 		if (PM_InShootDodgeInAir(&ent->client->ps))
-			shootDodgeTenlossChargeReductionModifier = SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;
+		{
+			shootDodgeTenlossChargeReductionModifier = getAllTimeDilation(&ent->client->ps);
+			shootDodgeTenlossDamageModifier = SHOOT_DODGE_TENLOSS_DAMAGE_MODIFIER;
+		}
 
 		// don't let NPC's do charging
 		int count = ( level.time - ent->client->ps.weaponChargeTime - 50 ) / ( DISRUPTOR_CHARGE_UNIT * shootDodgeTenlossChargeReductionModifier);
@@ -234,6 +241,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		//else do full traces
 
 		damage = damage * count + weaponData[WP_DISRUPTOR].damage * 0.5f; // give a boost to low charge shots
+		damage *= shootDodgeTenlossDamageModifier;
 	}
 
 	skip = ent->s.number;

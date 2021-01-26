@@ -3333,7 +3333,8 @@ void PM_TorsoAnimation( void )
 				case WP_DISRUPTOR:
 					if ( (pm->ps->weaponstate != WEAPON_FIRING
 							&& pm->ps->weaponstate != WEAPON_CHARGING
-							&& pm->ps->weaponstate != WEAPON_CHARGING_ALT)
+							&& pm->ps->weaponstate != WEAPON_CHARGING_ALT
+							&& cg.zoomMode < 2) // if you're not using disruptor zoom
 							|| PM_RunningAnim( pm->ps->legsAnim )
 							|| PM_WalkingAnim( pm->ps->legsAnim )
 							|| PM_JumpingAnim( pm->ps->legsAnim )
@@ -3588,7 +3589,8 @@ void PM_TorsoAnimation( void )
 				case WP_DISRUPTOR:
 					if ( (pm->ps->weaponstate != WEAPON_FIRING
 							&& pm->ps->weaponstate != WEAPON_CHARGING
-							&& pm->ps->weaponstate != WEAPON_CHARGING_ALT)
+							&& pm->ps->weaponstate != WEAPON_CHARGING_ALT
+							&& cg.zoomMode < 2) // if you're not using disruptor zoom
 							|| PM_RunningAnim( pm->ps->legsAnim )
 							|| PM_WalkingAnim( pm->ps->legsAnim )
 							|| PM_JumpingAnim( pm->ps->legsAnim )

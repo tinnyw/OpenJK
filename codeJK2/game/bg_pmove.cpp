@@ -8210,7 +8210,8 @@ static void PM_StartShootDodge()
 	// now copy over the direction of shoot dodge we've calucated to player state for client side interpolation
 	VectorCopy(curDir, pm->ps->shootDodgeDir);
 
-	g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
+	//g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
+	gi.cvar_set("timescale", va("%4.2f", SHOOT_DODGE_TIME_DILATION));
 	pm->ps->velocity[2] += JUMP_VELOCITY * 5 / 4; // start jumping
 	G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8db.mp3"); // warp sound effect
 
@@ -8252,7 +8253,7 @@ static void PM_TryStopShootDodge()
 	// if time is slow and you're in a shoot dodge, stop shoot dodge dilation
 	if (g_timescale->value < 1.0f && PM_InShootDodge(pm->ps))
 	{
-		g_timescale->value = getForceSpeedTimeDilation(pm->ps);
+		gi.cvar_set("timescale", va("%4.2f", getForceSpeedTimeDilation(pm->ps))); // stopping shoot dodge, set timescale to whatever force speed is setting it to if it's active
 		G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8dbreversed.mp3"); // sound effect
 	}
 }
@@ -8885,6 +8886,8 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			pm->cmd.buttons &= ~BUTTON_ATTACK;
 		}
 	}
+
+	Com_Printf("Timescale: %f\n", g_timescale->value);
 
 	// if we're just now pressing the alt attack button, check to see if we can shoot dodge
 	if ((pm->cmd.buttons & BUTTON_ALT_ATTACK) && !(pm->ps->eFlags & EF_ALT_FIRING))

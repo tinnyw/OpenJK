@@ -2474,6 +2474,8 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 		return;
 	}
 
+	Com_Printf("Client side timescale: %f\n", cg_timescale.value);
+
 	//FIXME: these globals done once at start of frame for various funcs
 	AngleVectors (cg.refdefViewAngles, vfwd, vright, vup);
 	VectorCopy( vfwd, vfwd_n );

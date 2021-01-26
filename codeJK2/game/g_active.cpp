@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "g_local.h"
 #include "g_functions.h"
+#include "b_shootdodge.h"
 #include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "wp_saber.h"
@@ -2109,12 +2110,11 @@ extern cvar_t	*g_skippingcin;
 		if ( cg.zoomMode == 2 )
 		{
 			// Any kind of movement when the player is NOT ducked when the disruptor gun is zoomed will cause us to auto-magically un-zoom
-			if ( ( (ucmd->forwardmove||ucmd->rightmove) 
+			if ( (( (ucmd->forwardmove||ucmd->rightmove) 
 				   && ucmd->upmove >= 0 //crouching-moving is ok
-				   && !(ucmd->buttons&BUTTON_USE)/*leaning is ok*/ 
-				 ) 
-				 || ucmd->upmove > 0 //jumping not allowed
-			   )
+				   && !(ucmd->buttons&BUTTON_USE)/*leaning is ok*/) 
+				 || ucmd->upmove > 0) //jumping not allowed
+				&& !PM_InShootDodgeInAir(&ent->client->ps))// but you can try to move around in shoot dodge while zoomed in
 			{
 				// already zooming, so must be wanting to turn it off
 				G_Sound( ent, G_SoundIndex( "sound/weapons/disruptor/zoomend.wav" ));

@@ -1829,6 +1829,9 @@ static void PM_AirMove( void ) {
 	{//I am force jumping and I'm not holding the button anymore
 		float curHeight = pm->ps->origin[2] - pm->ps->forceJumpZStart + (pm->ps->velocity[2]*pml.frametime);
 		float maxJumpHeight = forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]];
+		// if you're in a shoot dodge, add some more height to the apex of the jump
+		if (PM_InShootDodgeInAir(pm->ps))
+			maxJumpHeight += SHOOT_DODGE_IN_AIR_INCREASE_FOR_FORCE_JUMP;
 		if ( curHeight >= maxJumpHeight )
 		{//reached top, cut velocity
 			pm->ps->velocity[2] = 0;
@@ -8904,7 +8907,7 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		// we are not alt-firing yet, but the alt-attack button was just pressed and
 		//	we either are ducking ( in which case we don't care if they are moving )...or they are not ducking...and also not moving right/forward.
 		if ( !(pm->ps->eFlags & EF_ALT_FIRING) && (pm->cmd.buttons & BUTTON_ALT_ATTACK)
-				&& ( pm->cmd.upmove < 0 || ( !pm->cmd.forwardmove && !pm->cmd.rightmove )))
+				&& (( pm->cmd.upmove < 0 || ( !pm->cmd.forwardmove && !pm->cmd.rightmove )) || PM_InShootDodgeInAir(pm->ps))) // can enter zoom mode if attempting to move in shoot dodge
 		{
 			// We just pressed the alt-fire key
 			if ( cg.zoomMode == 0 || cg.zoomMode == 3 )

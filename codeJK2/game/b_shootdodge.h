@@ -22,9 +22,10 @@ float getRocketLockTimeWithShootDodgeTimeDilation(playerState_t* ps);
 extern qboolean canShootDodgeFromWallrun;
 
 // SHOOT DODGE GENERAL
-#define SHOOT_DODGE_TIME_DILATION .07f//.07f
+#define SHOOT_DODGE_TIME_DILATION .05f//.07f
 #define SHOOT_DODGE_FIRE_RATE_REDUCTION .4f
 #define SHOOT_DODGE_PROJECTILE_SPEED_MULTIPLIER 1.7f
+#define SHOOT_DODGE_IN_AIR_INCREASE_FOR_FORCE_JUMP 200
 
 
 // SHOOT DODGE ANIMATIONS

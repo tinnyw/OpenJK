@@ -578,7 +578,7 @@ void G_InitCvars( void ) {
 	g_debugMove = gi.cvar ("g_debugMove", "0", CVAR_CHEAT );
 	g_debugDamage = gi.cvar ("g_debugDamage", "0", CVAR_CHEAT );
 	g_ICARUSDebug = gi.cvar( "g_ICARUSDebug", "0", CVAR_CHEAT );
-	g_timescale = gi.cvar( "timescale", "1", 0 );
+	g_timescale = gi.cvar( "timescale", "1", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
 
 	g_subtitles = gi.cvar( "g_subtitles", "2", CVAR_ARCHIVE );
 	com_buildScript = gi.cvar ("com_buildscript", "0", 0);

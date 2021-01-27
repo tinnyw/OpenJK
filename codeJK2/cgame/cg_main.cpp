@@ -419,7 +419,7 @@ static cvarTable_t cvarTable[] = {
 
 	{ &cg_paused, "cl_paused", "0", CVAR_ROM },
 	{ &cg_developer, "developer", "", 0 },
-	{ &cg_timescale, "timescale", "1", 0 },
+	{ &cg_timescale, "timescale", "1", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART },
 	{ &cg_skippingcin, "skippingCinematic", "0", CVAR_ROM},
 	{ &cg_missionInfoCentered, "cg_missionInfoCentered", "1", CVAR_ARCHIVE },
 	{ &cg_missionInfoFlashTime, "cg_missionInfoFlashTime", "10000", 0  },

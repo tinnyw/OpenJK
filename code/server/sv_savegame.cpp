@@ -280,9 +280,6 @@ void SV_LoadGame_f(void)
 		Com_Printf (S_COLOR_CYAN "%s.\n",SE_GetString("MENUS_DONE"));
 #endif
 	}
-
-	// for some reason timesale messes up in shoot dodge, so set it back to 1
-	Cvar_Set("timescale", "1.0");
 }
 
 qboolean SG_GameAllowedToSaveHere(qboolean inCamera);

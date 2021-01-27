@@ -1123,7 +1123,7 @@ static void CG_DrawZoomMask( void )
 			CG_DrawRotatePic2( cx, cy, 12, 24, 90 - i, cgs.media.disruptorInsertTick );
 		}
 
-		static float chargeToDraw = 0;
+		static float chargeToDraw = 0; // do this at real client systime since it's being wonky if we set it with cg.time
 		// FIXME: doesn't know about ammo!! which is bad because it draws charge beyond what ammo you may have..
 		if (cg_entities[0].gent->client->ps.weaponstate == WEAPON_CHARGING_ALT)
 		{

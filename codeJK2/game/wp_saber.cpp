@@ -8035,7 +8035,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		speed = getAllTimeDilation(&self->client->ps);
 		if ( !self->s.number )
 		{//player using force speed
-			gi.cvar_set("timescale", va("%4.2f", speed));
+			gi.cvar_set("timescale", va("%6.4f", speed));
 			if ( g_timescale->value > speed )
 			{
 				newSpeed = g_timescale->value - 0.05;
@@ -8043,7 +8043,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 				{
 					newSpeed = speed;
 				}
-				gi.cvar_set("timescale", va("%4.2f", newSpeed));
+				gi.cvar_set("timescale", va("%6.4f", newSpeed));
 			}
 		}
 		break;

@@ -8058,13 +8058,13 @@ static int PM_DoChargingAmmoUsage( int *amount )
 	}
 	else if ( pm->ps->weapon == WP_DISRUPTOR && pm->cmd.buttons & BUTTON_ALT_ATTACK ) // BUTTON_ATTACK will have been mapped to BUTTON_ALT_ATTACK if we are zoomed
 	{
-		float shootDodgeTenlossChargeReductionModifier = 1.0f;
+		float timeDilationModifier = getAllTimeDilation(pm->ps);
 
 		if (PM_InShootDodgeInAir(pm->ps))
-			shootDodgeTenlossChargeReductionModifier = getAllTimeDilation(pm->ps);
+			timeDilationModifier *= SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;// but reduce charge time a tad in shoot dodge
 
 		// this code is duplicated ( I know, I know ) in G_weapon.cpp for the disruptor alt-fire
-		count = ( level.time - pm->ps->weaponChargeTime ) / (DISRUPTOR_CHARGE_UNIT * shootDodgeTenlossChargeReductionModifier);
+		count = ( level.time - pm->ps->weaponChargeTime ) / (DISRUPTOR_CHARGE_UNIT * timeDilationModifier);
 
 		if ( count < 1 )
 		{
@@ -8092,7 +8092,7 @@ static int PM_DoChargingAmmoUsage( int *amount )
 				}
 
 				// now get a real chargeTime so the duplicated code in g_weapon doesn't get freaked
-				pm->ps->weaponChargeTime = level.time - ( count * DISRUPTOR_CHARGE_UNIT * shootDodgeTenlossChargeReductionModifier );
+				pm->ps->weaponChargeTime = level.time - ( count * DISRUPTOR_CHARGE_UNIT * timeDilationModifier);
 			}
 		}
 

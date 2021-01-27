@@ -207,17 +207,18 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		VectorCopy( ent->client->renderInfo.eyePoint, start );
 		AngleVectors( ent->client->renderInfo.eyeAngles, wpFwd, NULL, NULL );
 
-		float shootDodgeTenlossChargeReductionModifier = 1.0f;
+		// always keep charge constant if you're in force speed or not
+		float timeDilationChargeModifier = getAllTimeDilation(&ent->client->ps);
 		float shootDodgeTenlossDamageModifier = 1.0f;
 
 		if (PM_InShootDodgeInAir(&ent->client->ps))
 		{
-			shootDodgeTenlossChargeReductionModifier = getAllTimeDilation(&ent->client->ps);
+			timeDilationChargeModifier *= SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;// but reduce charge time a tad in shoot dodge
 			shootDodgeTenlossDamageModifier = SHOOT_DODGE_TENLOSS_DAMAGE_MODIFIER;
 		}
 
 		// don't let NPC's do charging
-		int count = ( level.time - ent->client->ps.weaponChargeTime - 50 ) / ( DISRUPTOR_CHARGE_UNIT * shootDodgeTenlossChargeReductionModifier);
+		int count = ( level.time - ent->client->ps.weaponChargeTime - 50 ) / ( DISRUPTOR_CHARGE_UNIT * timeDilationChargeModifier);
 
 		if ( count < 1 )
 		{

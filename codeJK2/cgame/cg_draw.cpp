@@ -1123,21 +1123,25 @@ static void CG_DrawZoomMask( void )
 			CG_DrawRotatePic2( cx, cy, 12, 24, 90 - i, cgs.media.disruptorInsertTick );
 		}
 
+		static float chargeToDraw = 0;
 		// FIXME: doesn't know about ammo!! which is bad because it draws charge beyond what ammo you may have..
-		if ( cg_entities[0].gent->client->ps.weaponstate == WEAPON_CHARGING_ALT )
+		if (cg_entities[0].gent->client->ps.weaponstate == WEAPON_CHARGING_ALT)
 		{
-			cgi_R_SetColor( colorTable[CT_WHITE] );
+			cgi_R_SetColor(colorTable[CT_WHITE]);
 
-			// draw the charge level, charge time is already modified by shoot dodge time dilation server side so no need to do it again here
-			max = ( cg.time - cg_entities[0].gent->client->ps.weaponChargeTime ) / ( 150.0f * 10.0f); // bad hardcodedness 150 is disruptor charge unit and 10 is max charge units allowed.
+			const float MAX_TENLOSS_CHARGE_COUNTS = 10.0f;
+			float shootDodgeClientSideChargeTimeModifier = 1.0f;
+			if (PM_InShootDodgeInAir(&cg_entities[0].gent->client->ps))
+				shootDodgeClientSideChargeTimeModifier *= SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;// but reduce charge time a tad in shoot dodge
 
-			if ( max > 1.0f )
-			{
-				max = 1.0f;
-			}
+			chargeToDraw += cg.actualClientFrameDeltaTime / (DISRUPTOR_CHARGE_UNIT * MAX_TENLOSS_CHARGE_COUNTS * shootDodgeClientSideChargeTimeModifier);
+			if (chargeToDraw > 1.0f)
+				chargeToDraw = 1.0f;
 
-			CG_DrawPic2( 257, 435, 134 * max, 34, 0,0,max,1,cgi_R_RegisterShaderNoMip( "gfx/2d/crop_charge" ));
+			CG_DrawPic2(257, 435, 134 * chargeToDraw, 34, 0, 0, chargeToDraw, 1, cgi_R_RegisterShaderNoMip("gfx/2d/crop_charge"));
 		}
+		else
+			chargeToDraw = 0;
 	}
 	//-----------
 	// Light Amp

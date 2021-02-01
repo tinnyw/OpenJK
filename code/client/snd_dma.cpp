@@ -2790,35 +2790,35 @@ void S_Update_(void) {
 		return;
 	}
 
-		// Updates s_soundtime
-		S_GetSoundtime();
+	// Updates s_soundtime
+	S_GetSoundtime();
 
-		const int s_oldpaintedtime = s_paintedtime;
+	const int s_oldpaintedtime = s_paintedtime;
 
-		// clear any sound effects that end before the current time,
-		// and start any new sounds
-		S_ScanChannelStarts();
+	// clear any sound effects that end before the current time,
+	// and start any new sounds
+	S_ScanChannelStarts();
 
-		// mix ahead of current position
-		endtime = (int)(s_soundtime + s_mixahead->value * dma.speed);
+	// mix ahead of current position
+	endtime = (int)(s_soundtime + s_mixahead->value * dma.speed);
 
-		// mix to an even submission block size
-		endtime = (endtime + dma.submission_chunk-1)
-			& ~(dma.submission_chunk-1);
+	// mix to an even submission block size
+	endtime = (endtime + dma.submission_chunk-1)
+		& ~(dma.submission_chunk-1);
 
-		// never mix more than the complete buffer
-		samps = dma.samples >> (dma.channels-1);
-		if (endtime - s_soundtime > (unsigned)samps)
-			endtime = s_soundtime + samps;
+	// never mix more than the complete buffer
+	samps = dma.samples >> (dma.channels-1);
+	if (endtime - s_soundtime > (unsigned)samps)
+		endtime = s_soundtime + samps;
 
 
-		SNDDMA_BeginPainting ();
+	SNDDMA_BeginPainting ();
 
-		S_PaintChannels (endtime);
+	S_PaintChannels (endtime);
 
-		SNDDMA_Submit ();
+	SNDDMA_Submit ();
 
-		S_DoLipSynchs( s_oldpaintedtime );
+	S_DoLipSynchs( s_oldpaintedtime );
 }
 
 #ifdef USE_OPENAL

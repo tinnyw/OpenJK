@@ -2893,6 +2893,14 @@ void S_Update_(void) {
 				}
 			}
 
+			if (com_timescale->value < 1.0f)
+			{
+				float pitchShift = .8f;
+				alSourcef(s_channels[source].alSource, AL_PITCH, pitchShift);
+			}
+			else
+				alSourcef(s_channels[source].alSource, AL_PITCH, 1.0f);
+
 			if (s_bEALFileLoaded)
 				UpdateEAXBuffer(ch);
 

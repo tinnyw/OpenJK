@@ -47,7 +47,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
-	if(MSVC AND NOT WIN64)
+	if(MSVC)
 		if(UseInternalOpenAL)
 			# There's a libs/OpenAL32.lib
 			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?

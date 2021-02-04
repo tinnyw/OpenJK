@@ -2450,8 +2450,8 @@ qboolean hitLocOnEntityToLocation(gentity_s* self, int hitLoc, vec3_t& limbLocat
 }
 
 
-// for explosions
-void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, int damage, float dmgRadius)
+// for explosions or C3P0
+void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, int damage, float dmgRadius, qboolean totalDismemberment = qfalse)
 {
 	if (g_iscensored->integer)
 		return;
@@ -2476,7 +2476,7 @@ void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, i
 		int limbNum = LIMBS_BY_EXREMETIES_FIRST[i];
 		if (hitLocOnEntityToLocation(self, limbNum, limbLoc))
 		{
-			if ((dmgRadius-Distance(explosionCenter, limbLoc)) / dmgRadius > .4f)
+			if (totalDismemberment || ((dmgRadius-Distance(explosionCenter, limbLoc)) / dmgRadius > .4f))
 				G_DoDismemberment(self, limbLoc, mod, damage, limbNum, qtrue);
 		}
 	}
@@ -3516,10 +3516,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		else
 		{
 			anim = G_PickDeathAnim( self, self->pos1, damage, meansOfDeath, hitLoc );
-			if ( /*dflags & DAMAGE_DISMEMBER*/ isDismemberableMod(meansOfDeath) && !isExplosive(meansOfDeath) ) //explosive dismemberment is handled in the actual radius damage code
-			{
+			if ( meansOfDeath == MOD_SABER ) //explosive dismemberment is handled in the actual radius damage code
 				G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc );
-			}
+
 			if ( anim >= 0 )
 			{
 				NPC_SetAnim(self, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
@@ -3527,6 +3526,16 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 		return;
 	}
+
+	// finally have explosive dismemberment for C3P0 and other protocol droids
+	if (isExplosive(meansOfDeath) && self->health <= 0)
+	{
+		anim = G_PickDeathAnim(self, self->pos1, damage, meansOfDeath, hitLoc);
+		if (anim >= 0)
+			NPC_SetAnim(self, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
+		G_DoRadiusDismemberment(self, inflictor->pos1, meansOfDeath, damage, 300.0f, qtrue);
+	}
+
 
 #ifndef FINAL_BUILD
 	if ( d_saberCombat->integer && attacker && attacker->client )
@@ -5705,10 +5714,6 @@ void G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, float ra
 			}
 
 			G_Damage (ent, NULL, attacker, dir, origin, (int)points, DAMAGE_RADIUS, mod);
-			if (ent->health <= 0) // if within the blast radius to the probability checks on radius dismemberment
-				G_DoRadiusDismemberment(ent, origin, mod, damage, radius);
 		}
-		if (ignore && ignore->health <= 0) // also do explosive dismemberment on the person that was directly hit
-			G_DoRadiusDismemberment(ignore, origin, mod, damage, radius);
 	}
 }

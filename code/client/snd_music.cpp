@@ -34,6 +34,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "snd_local.h"
 #include "cl_mp3.h"
+#include <sound_time_dilation.h>
 
 //
 #include "snd_music.h"
@@ -122,6 +123,21 @@ namespace detail
 		stream << head;
 		build_string( stream, tail... );
 	}
+}
+
+void setPitchDilationByTimescale()
+{
+	float pitchDilation = 1.0f;
+	float timescaleValue = com_timescale->value;
+
+	if (timescaleValue < .02f)
+		pitchDilation = .7f;
+	else if (timescaleValue < 1.0f)
+		pitchDilation = .8f;
+	else if (timescaleValue > 1.0f)
+		pitchDilation = 1.2f;
+
+	setSoundPitchForTimeDilation(pitchDilation);
 }
 
 template< typename... Tail >

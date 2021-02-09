@@ -47,7 +47,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
-	if(MSVC)
+	if(MSVC AND NOT WIN64)
 		if(UseInternalOpenAL)
 			# There's a libs/OpenAL32.lib
 			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
@@ -69,6 +69,10 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		source_group("eax" FILES ${SPEngineEAXFiles})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineEAXFiles})
 	endif()
+
+	# stuff for dsoal
+	set(SPEngineLibraries ${SPEngineLibraries} ${OpenJKLibDir}/dsoal/dsound.lib)
+	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OpenJKLibDir}/dsoal/include)
 
 	if(UseInternalSDL2)
 		if(CMAKE_SIZEOF_VOID_P EQUAL 4)

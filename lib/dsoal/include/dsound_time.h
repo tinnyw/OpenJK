@@ -479,6 +479,7 @@ extern "C" {
 #if DIRECTSOUND_VERSION >= 0x0800
     extern HRESULT WINAPI DirectSoundCreate8(_In_opt_ LPCGUID pcGuidDevice, _Outptr_ LPDIRECTSOUND8* ppDS8, _Pre_null_ LPUNKNOWN pUnkOuter);
     extern HRESULT WINAPI DirectSoundCaptureCreate8(_In_opt_ LPCGUID pcGuidDevice, _Outptr_ LPDIRECTSOUNDCAPTURE8* ppDSC8, _Pre_null_ LPUNKNOWN pUnkOuter);
+    extern HRESULT WINAPI setSoundPitchForTimeDilation(float pitchDilation);
     extern HRESULT WINAPI DirectSoundFullDuplexCreate
     (
         _In_opt_ LPCGUID pcGuidCaptureDevice,

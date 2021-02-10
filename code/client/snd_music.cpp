@@ -34,12 +34,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "snd_local.h"
 #include "cl_mp3.h"
-#include <sound_time_dilation.h>
 
 //
 #include "snd_music.h"
 
 #include "../game/genericparser2.h"
+#include <dsound_time.h>
 
 extern qboolean S_FileExists( const char *psFilename );
 
@@ -224,6 +224,8 @@ static qboolean Music_ParseMusic( gsl::czstring filename, const CGenericParser2&
 {
 	bool bReturn = false;
 	MusicFile_t MusicFile;
+
+	setSoundPitchForTimeDilation(.8f);
 
 	const CGPGroup* const pgMusicFile = pgMusicFiles.FindSubGroup( psMusicName );
 	if( pgMusicFile )

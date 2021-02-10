@@ -70,7 +70,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineEAXFiles})
 	endif()
 
-	# stuff for dsoal
+	# stuff for dsoal, change this to 64 vs 32 conditional
 	set(SPEngineLibraries ${SPEngineLibraries} ${OpenJKLibDir}/dsoal/dsound.lib)
 	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OpenJKLibDir}/dsoal/include)
 

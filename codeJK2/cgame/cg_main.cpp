@@ -301,6 +301,7 @@ vmCvar_t	cg_thirdPersonHorzOffset;
 vmCvar_t	cg_stereoSeparation;
 vmCvar_t 	cg_developer;
 vmCvar_t 	cg_timescale;
+vmCvar_t 	cg_sounddilation; //cvar for whether sounds should dilate with shoot dodge
 vmCvar_t	cg_skippingcin;
 
 vmCvar_t	cg_pano;
@@ -368,6 +369,8 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_crosshairY, "cg_crosshairY", "0", CVAR_ARCHIVE },
 	{ &cg_simpleItems, "cg_simpleItems", "0", CVAR_ARCHIVE },
 	{ &cg_addMarks, "cg_marks", "1", CVAR_ARCHIVE },
+
+	{ &cg_sounddilation, "cg_sounddilation", "1", CVAR_ARCHIVE | CVAR_SAVEGAME },
 
 	{ &cg_gun_frame, "gun_frame", "0", CVAR_CHEAT },
 	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },

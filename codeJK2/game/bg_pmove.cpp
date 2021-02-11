@@ -8212,6 +8212,7 @@ static void PM_StartShootDodge()
 
 	//g_timescale->value = SHOOT_DODGE_TIME_DILATION; // slow down time
 	gi.cvar_set("timescale", va("%6.4f", SHOOT_DODGE_TIME_DILATION));
+	cgi_S_SetSoundTimeDilation();
 	pm->ps->velocity[2] += JUMP_VELOCITY * 5 / 4; // start jumping
 	G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8db.mp3"); // warp sound effect
 
@@ -8255,6 +8256,7 @@ static void PM_TryStopShootDodge()
 	{
 		gi.cvar_set("timescale", va("%6.4f", getForceSpeedTimeDilation(pm->ps))); // stopping shoot dodge, set timescale to whatever force speed is setting it to if it's active
 		G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8dbreversed.mp3"); // sound effect
+		cgi_S_SetSoundTimeDilation();// turn off sound dilation
 	}
 }
 

@@ -988,6 +988,7 @@ void	cgi_S_UpdateEntityPosition( int entityNum, const vec3_t origin );
 void	cgi_S_Respatialize( int entityNum, const vec3_t origin, vec3_t axis[3], qboolean inwater );
 sfxHandle_t	cgi_S_RegisterSound( const char *sample );		// returns buzz if not found
 void	cgi_S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bForceStart );	// empty name stops music
+void	cgi_S_SetSoundTimeDilation(void);	// set the time dilation on music and sound effects for bullet time and force speed
 float	cgi_S_GetSampleLength( sfxHandle_t sfx);
 
 void	cgi_R_LoadWorldMap( const char *mapname );

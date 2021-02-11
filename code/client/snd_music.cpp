@@ -39,7 +39,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_music.h"
 
 #include "../game/genericparser2.h"
-#include <dsound_time.h>
 
 extern qboolean S_FileExists( const char *psFilename );
 
@@ -123,21 +122,6 @@ namespace detail
 		stream << head;
 		build_string( stream, tail... );
 	}
-}
-
-void setPitchDilationByTimescale()
-{
-	float pitchDilation = 1.0f;
-	float timescaleValue = com_timescale->value;
-
-	if (timescaleValue < .02f)
-		pitchDilation = .7f;
-	else if (timescaleValue < 1.0f)
-		pitchDilation = .8f;
-	else if (timescaleValue > 1.0f)
-		pitchDilation = 1.2f;
-
-	setSoundPitchForTimeDilation(pitchDilation);
 }
 
 template< typename... Tail >
@@ -224,8 +208,6 @@ static qboolean Music_ParseMusic( gsl::czstring filename, const CGenericParser2&
 {
 	bool bReturn = false;
 	MusicFile_t MusicFile;
-
-	setSoundPitchForTimeDilation(.8f);
 
 	const CGPGroup* const pgMusicFile = pgMusicFiles.FindSubGroup( psMusicName );
 	if( pgMusicFile )

@@ -8192,20 +8192,20 @@ static qboolean PM_CanShootDodge()
 static void PM_StartShootDodge()
 {
 	vec3_t curDir;
-	float shootDodgeSpeed;
+	float shootDodgeDiveSpeed;
 	float originalVerticalSpeed = pm->ps->velocity[2];
 
 	// if you're starting from a wall run, make the shoot dodge direction perpendicular to where you're running
 	if (PM_IsWallRunAnimation(pm->ps->legsAnim))
 	{
-		shootDodgeSpeed = 100.0f;
+		shootDodgeDiveSpeed = 100.0f;
 		AngleVectors(cg.refdefViewAngles, NULL, curDir, NULL);
 		VectorNormalize(curDir);
 		if (pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT || pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP)
 			VectorScale(curDir, -1, curDir);
 	}
 	else // else just use the velocity for which way to figure out which way to shoot dodge
-		shootDodgeSpeed = VectorNormalize2(pm->ps->velocity, curDir) / 7.0f;
+		shootDodgeDiveSpeed = VectorNormalize2(pm->ps->velocity, curDir) / 7.0f;
 
 	// now copy over the direction of shoot dodge we've calucated to player state for client side interpolation
 	VectorCopy(curDir, pm->ps->shootDodgeDir);
@@ -8242,7 +8242,7 @@ static void PM_StartShootDodge()
 	pm->gent->s.loopSound = G_SoundIndex("sound/shoot_dodge/bullettimeloop"); //also start whoosh loop sound
 	cgi_S_AddLoopingSound(pm->ps->clientNum, pm->ps->origin, vec3_origin, cgi_S_RegisterSound("sound/shoot_dodge/bullettimeloop.mp3"));*/
 		
-	G_Throw(pm->gent, curDir, shootDodgeSpeed); // propel in appropriate direction
+	G_Throw(pm->gent, curDir, shootDodgeDiveSpeed); // propel in appropriate direction
 
 	// just in case you're jumping from force level 3 and you already have vertical momentum, keep it going
 	if (pm->ps->velocity[2] < originalVerticalSpeed)

@@ -800,7 +800,7 @@ static void CG_DrawHUD( centity_t *cent )
 	}
 
 	if (PM_IsShootdodgeWeapon(cent->currentState.weapon) && cent->gent->client->ps.shootDodgeToggled)
-		CG_DrawPic(575, 350, 40, 40, cgs.media.shootDodgeToggle);
+		CG_DrawPic(580, 320, 40, 40, cgs.media.shootDodgeToggle);
 }
 
 /*

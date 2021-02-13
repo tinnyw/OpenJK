@@ -8241,9 +8241,7 @@ static void PM_StartShootDodge()
 	else
 		PM_SetAnim(pm, SETANIM_LEGS, BOTH_SHOOTDODGE_R, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 
-	/*cgi_S_StartSound(pm->ps->origin, pm->ps->clientNum, CHAN_AMBIENT, G_SoundIndex("sound/shoot_dodge/bullettimeloop"));
-	pm->gent->s.loopSound = G_SoundIndex("sound/shoot_dodge/bullettimeloop"); //also start whoosh loop sound
-	cgi_S_AddLoopingSound(pm->ps->clientNum, pm->ps->origin, vec3_origin, cgi_S_RegisterSound("sound/shoot_dodge/bullettimeloop.mp3"));*/
+	pm->gent->s.loopSound = G_SoundIndex("sound/shoot_dodge/shoot_dodge_loop.wav");
 		
 	G_Throw(pm->gent, curDir, shootDodgeDiveSpeed); // propel in appropriate direction
 
@@ -8256,6 +8254,7 @@ static void PM_StopShootDodge()
 {
 	// if time is slow and you're in a shoot dodge, stop shoot dodge dilation
 	gi.cvar_set("timescale", va("%6.4f", getForceSpeedTimeDilation(pm->ps))); // stopping shoot dodge, set timescale to whatever force speed is setting it to if it's active
+	pm->gent->s.loopSound = 0;
 	G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8dbreversed.mp3"); // sound effect
 	cgi_S_SetSoundTimeDilation();// turn off sound dilation
 }

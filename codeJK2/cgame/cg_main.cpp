@@ -698,6 +698,8 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.zoomLoop = cgi_S_RegisterSound( "sound/interface/zoomloop.wav" );
 	cgs.media.zoomEnd = cgi_S_RegisterSound( "sound/interface/zoomend.wav" );
 
+	cgi_S_RegisterSound("sound/shoot_dodge/shoot_dodge_loop.wav");
+
 	cgi_S_RegisterSound( "sound/chars/turret/startup.wav" );
 	cgi_S_RegisterSound( "sound/chars/turret/shutdown.wav" );
 	cgi_S_RegisterSound( "sound/chars/turret/ping.wav" );

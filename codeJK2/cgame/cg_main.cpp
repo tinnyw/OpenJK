@@ -1639,6 +1639,8 @@ Ghoul2 Insert End
 
 	CG_ClearLightStyles();
 
+	// have sound dilation being reset on game load or quickload
+	cgi_S_SetSoundTimeDilation();
 }
 
 void CG_WriteTheEvilCGHackStuff(void)

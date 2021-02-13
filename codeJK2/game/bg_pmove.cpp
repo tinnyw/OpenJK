@@ -2536,7 +2536,7 @@ static qboolean PM_TryRoll( void )
 	return qfalse;
 }
 
-static void PM_TryStopShootDodge();
+static void PM_StopShootDodge();
 
 /*
 =================
@@ -2551,7 +2551,10 @@ static void PM_CrashLand( void )
 	qboolean	forceLanding = qfalse;
 
 	// before anything, trigger ending of shoot dodge if you're in one
-	PM_TryStopShootDodge();
+	if (g_timescale->value < getForceSpeedTimeDilation(pm->ps) && PM_InShootDodge(pm->ps))
+	{
+		PM_StopShootDodge();
+	}
 
 	if ( pm->ps->pm_flags&PMF_TRIGGER_PUSHED )
 	{
@@ -8249,15 +8252,12 @@ static void PM_StartShootDodge()
 		pm->ps->velocity[2] += originalVerticalSpeed;
 }
 
-static void PM_TryStopShootDodge()
+static void PM_StopShootDodge()
 {
 	// if time is slow and you're in a shoot dodge, stop shoot dodge dilation
-	if (g_timescale->value < 1.0f && PM_InShootDodge(pm->ps))
-	{
-		gi.cvar_set("timescale", va("%6.4f", getForceSpeedTimeDilation(pm->ps))); // stopping shoot dodge, set timescale to whatever force speed is setting it to if it's active
-		G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8dbreversed.mp3"); // sound effect
-		cgi_S_SetSoundTimeDilation();// turn off sound dilation
-	}
+	gi.cvar_set("timescale", va("%6.4f", getForceSpeedTimeDilation(pm->ps))); // stopping shoot dodge, set timescale to whatever force speed is setting it to if it's active
+	G_SoundOnEnt(pm->gent, CHAN_LOCAL_SOUND, "sound/shoot_dodge/bassbullettime8dbreversed.mp3"); // sound effect
+	cgi_S_SetSoundTimeDilation();// turn off sound dilation
 }
 
 /*
@@ -8903,6 +8903,11 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			return;
 		}
 	}
+
+	// if for whatever reason you're not in shoot dodge anymore and you're the player but time is still slower than what the active force speed level's
+	// time dilation is, stop shoot doodge (for when you get interrupted say by force push in shoot dodge)
+	if (!PM_InShootDodgeInAir(pm->ps) && !pm->ps->clientNum && g_timescale->value < getForceSpeedTimeDilation(pm->ps))
+		PM_StopShootDodge();
 
 	// disruptor alt-fire should toggle the zoom mode, but only bother doing this for the player?
 	if ( pm->ps->weapon == WP_DISRUPTOR && pm->gent && pm->gent->s.number == 0 && pm->ps->weaponstate != WEAPON_DROPPING )

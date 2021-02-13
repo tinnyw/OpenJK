@@ -32,7 +32,7 @@
 
 		onOpen 
 		{
-			exec				"music music/cairn_bay/impbasee_explore" ;
+			exec				"music music/bespin_streets/bespina_action" ;
 			setfocus			newgamebutton 
 		}
 									

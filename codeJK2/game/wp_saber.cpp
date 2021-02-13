@@ -7801,6 +7801,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 			{
 				float dilation = getShootDodgeTimeDilation(&self->client->ps);
 				gi.cvar_set("timescale", va("%f", dilation));
+				cgi_S_SetSoundTimeDilation();
 			}
 		}
 		//FIXME: reset my current anim, keeping current frame, but with proper anim speed
@@ -8044,6 +8045,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 					newSpeed = speed;
 				}
 				gi.cvar_set("timescale", va("%6.4f", newSpeed));
+				cgi_S_SetSoundTimeDilation();
 			}
 		}
 		break;

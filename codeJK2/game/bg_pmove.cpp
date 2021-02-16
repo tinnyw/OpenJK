@@ -8169,8 +8169,8 @@ static qboolean PM_CanShootDodge()
 	if (pm->ps->shootDodgeToggled) // have shoot dodge toggled off
 		return qfalse;
 
-	if (!cg.renderingThirdPerson) // right now only supporting third person
-		return qfalse;
+	/*if (!cg.renderingThirdPerson) // right now only supporting third person
+		return qfalse;*/
 
 	if (PM_InKnockDown(pm->ps) || PM_InKnockDownOnGround(pm->ps) || PM_InRoll(pm->ps) || (pm->ps->pm_flags & PMF_DUCKED) || PM_InShootDodge(pm->ps))
 		return qfalse;

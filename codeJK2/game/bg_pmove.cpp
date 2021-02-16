@@ -2393,7 +2393,7 @@ static qboolean PM_TryRoll( void )
 	{//attacking or spinning (or, if player, starting an attack)
 		return qfalse;
 	}
-	if ( !pm->ps->clientNum && (!cg.renderingThirdPerson || cg.zoomMode) )
+	if ( !pm->ps->clientNum && (/*!cg.renderingThirdPerson ||*/ cg.zoomMode) )
 	{//player can't do this in 1st person
 		return qfalse;
 	}

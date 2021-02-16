@@ -1294,6 +1294,7 @@ void CG_DrawCredits(void)
 		if ( cg_skippingcin.integer )
 		{//Were skipping a cinematic and it's over now
 			gi.cvar_set("timescale", "1");
+			cgi_S_SetSoundTimeDilation();
 			gi.cvar_set("skippingCinematic", "0");
 		}
 	}

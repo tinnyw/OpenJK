@@ -1821,6 +1821,7 @@ void G_StopCinematicSkip( void )
 {
 	gi.cvar_set("skippingCinematic", "0");
 	gi.cvar_set("timescale", "1");
+	cgi_S_SetSoundTimeDilation();
 }
 
 void G_StartCinematicSkip( void )
@@ -2092,6 +2093,7 @@ extern cvar_t	*g_skippingcin;
 			if ( g_skippingcin->integer )
 			{//We're skipping the cinematic and it's over now
 				gi.cvar_set("timescale", "1");
+				cgi_S_SetSoundTimeDilation();
 				gi.cvar_set("skippingCinematic", "0");
 			}
 			if ( ent->client->ps.pm_type == PM_DEAD && cg.missionStatusDeadTime < level.time )

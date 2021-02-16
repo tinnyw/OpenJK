@@ -1952,6 +1952,7 @@ void CG_MatrixEffect ( centity_t *cent )
 		cg.overrides.thirdPersonRange = 0;
 		cg.overrides.thirdPersonEntity = 0;
 		cgi_Cvar_Set( "timescale", "1.0" );
+		cgi_S_SetSoundTimeDilation();
 		MatrixMode = qfalse;
 		cent->gent->e_clThinkFunc = clThinkF_NULL;
 		return;

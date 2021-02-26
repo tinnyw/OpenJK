@@ -175,7 +175,7 @@ void Pmove( pmove_t *pmove );
 #define SETANIM_FLAG_HOLDLESS	8//Set the new timer
 
 void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags, int blendTime=100);
-void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,int type,int anim,int priority,int *torsoAnimTimer,int *legsAnimTimer,gentity_t *gent,int blendTime=100);
+void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,int type,int anim,int priority,int *torsoAnimTimer,int *legsAnimTimer,gentity_t *gent,int blendTime=100, qboolean blendingForShootDodge = qfalse);
 void PM_SetSaberMove(short newMove);
 
 //===================================================================================

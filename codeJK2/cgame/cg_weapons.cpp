@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/wp_saber.h"
 #include "../game/g_local.h"
 #include "../game/anims.h"
+#include "../game/b_shootdodge.h"
 
 extern void CG_LightningBolt( centity_t *cent, vec3_t origin );
 
@@ -221,6 +222,8 @@ void CG_RegisterWeapon( int weaponNum ) {
 	{
 		weaponInfo->alt_missileTrailFunc = (void (QDECL *)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].altfunc;
 	}
+
+	cgi_S_RegisterSound("sound/shoot_dodge/bullettimeloop.mp3");
 
 	switch ( weaponNum )	//extra client only stuff
 	{
@@ -979,7 +982,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 	// drop gun lower at higher fov
 	float actualFOV;
 		gentity_t	*player = &g_entities[0];
-	if ( (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )//cg.renderingThirdPerson &&
+	if ( (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] && !PM_InShootDodgeInAir(&player->client->ps))//cg.renderingThirdPerson &&
 	{
 		actualFOV = CG_ForceSpeedFOV();
 		actualFOV = (cg_fovViewmodel.integer) ? actualFOV + (cg_fovViewmodel.integer - cg_fov.integer) : actualFOV;
@@ -1821,6 +1824,11 @@ void CG_DrawWeaponSelect( void )
 	vec4_t	calcColor;
 	vec4_t	textColor = { .875f, .718f, .121f, 1.0f };
 
+	if (!cg_drawHUD.integer)
+	{
+		return;
+	}
+
 	if (!cgi_UI_GetMenuInfo("weaponselecthud",&x2,&y2))
 	{
 		return;
@@ -2385,7 +2393,7 @@ void CG_Weapon_f( void )
 {
 	int		num;
 
-	if ( cg.weaponSelectTime + 200 > cg.time )
+	if ( cg.weaponSelectTime + 200 * getAllTimeDilation(&cg.snap->ps) > cg.time )
 	{
 		return;
 	}

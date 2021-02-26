@@ -102,6 +102,7 @@ typedef struct {
 	qhandle_t	ladyLuckHealthShader;
 	qhandle_t	turretComputerOverlayShader;
 	qhandle_t	turretCrossHairShader;
+	qhandle_t	shootDodgeToggle;
 
 	int			currentDataPadIconBackground;
 

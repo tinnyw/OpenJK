@@ -323,6 +323,9 @@ typedef struct {
 								// is rendering at.
 	int			oldTime;		// time at last frame, used for missile trails and prediction checking
 
+	int			actualClientTime;	// actual client's system time, used for rendering things irrespective of time dilation stuff going on with the server
+	int			actualClientFrameDeltaTime;	// actual client's system time delta between frames
+
 	int			timelimitWarnings;	// 5 min, 1 min, overtime
 
 	qboolean	renderingThirdPerson;		// during deaths, chasecams, etc
@@ -610,6 +613,7 @@ extern	vmCvar_t		cg_gunAutoFirst;
 extern	vmCvar_t		cg_stereoSeparation;
 extern	vmCvar_t		cg_developer;
 extern	vmCvar_t		cg_timescale;
+extern	vmCvar_t		cg_sounddilation;
 extern	vmCvar_t		cg_skippingcin;
 
 extern	vmCvar_t		cg_pano;
@@ -985,6 +989,7 @@ void	cgi_S_UpdateEntityPosition( int entityNum, const vec3_t origin );
 void	cgi_S_Respatialize( int entityNum, const vec3_t origin, vec3_t axis[3], qboolean inwater );
 sfxHandle_t	cgi_S_RegisterSound( const char *sample );		// returns buzz if not found
 void	cgi_S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bForceStart );	// empty name stops music
+void	cgi_S_SetSoundTimeDilation(void);	// set the time dilation on music and sound effects for bullet time and force speed
 float	cgi_S_GetSampleLength( sfxHandle_t sfx);
 
 void	cgi_R_LoadWorldMap( const char *mapname );

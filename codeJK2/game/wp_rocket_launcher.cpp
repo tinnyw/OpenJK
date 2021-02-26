@@ -23,6 +23,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_headers.h"
 
 #include "b_local.h"
+#include "b_shootdodge.h"
 #include "g_local.h"
 #include "wp_saber.h"
 #include "w_local.h"
@@ -146,7 +147,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 	int		damage	= weaponData[WP_ROCKET_LAUNCHER].damage;
 	float	vel = ROCKET_VELOCITY;
 
-	if ( alt_fire )
+	if ( alt_fire && !PM_InShootDodge(&ent->client->ps) )
 	{
 		vel *= 0.5f;
 	}
@@ -183,7 +184,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 		if ( ent->NPC && ent->enemy )
 		{
 			lockEntNum = ent->enemy->s.number;
-			lockTime = Q_irand( 600, 1200 );
+			lockTime = Q_irand(ROCKET_LOCKTIME/2, ROCKET_LOCKTIME ) * (int)getShootDodgeTimeDilation(&ent->client->ps);
 		}
 		else
 		{
@@ -194,7 +195,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 		if ( (lockEntNum > 0 || (ent->NPC && lockEntNum >= 0)) && lockEntNum < ENTITYNUM_WORLD && lockTime > 0 )
 		{
 			// take our current lock time and divide that by 8 wedge slices to get the current lock amount
-			int dif = ( level.time - lockTime ) / ( 1200.0f / 8.0f );
+			int dif = ( level.time - lockTime ) / ( (getRocketLockTimeWithShootDodgeTimeDilation(&ent->client->ps)) / 8.0f );
 
 			if ( dif < 0 )
 			{

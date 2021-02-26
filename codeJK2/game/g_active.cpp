@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "g_local.h"
 #include "g_functions.h"
+#include "b_shootdodge.h"
 #include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "wp_saber.h"
@@ -57,6 +58,7 @@ extern qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qbool
 extern qboolean PM_AdjustAnglesForSpinningFlip( gentity_t *ent, usercmd_t *ucmd, qboolean anglesOnly );
 extern qboolean PM_AdjustAnglesForBackAttack( gentity_t *ent, usercmd_t *ucmd );
 extern qboolean PM_AdjustAnglesForSaberLock( gentity_t *ent, usercmd_t *ucmd );
+extern qboolean PM_AdjustAnglesForSaberLock(gentity_t* ent, usercmd_t* ucmd);
 extern qboolean PM_AdjustAnglesForKnockdown( gentity_t *ent, usercmd_t *ucmd, qboolean angleClampOnly );
 extern qboolean PM_HasAnimation( gentity_t *ent, int animation );
 extern qboolean PM_SpinningSaberAnim( int anim );
@@ -1704,15 +1706,6 @@ extern void CG_ChangeWeapon( int num );
 		{
 			//might be NONE, so check if it has a model
 			G_CreateG2AttachedWeaponModel( ent, weaponData[ent->client->ps.weapon].weaponMdl );
-
-			if ( ent->client->ps.weapon == WP_SABER && cg_saberAutoThird.value )
-			{
-				gi.cvar_set( "cg_thirdperson", "1" );
-			}
-			else if ( ent->client->ps.weapon != WP_SABER && cg_gunAutoFirst.value )
-			{
-				gi.cvar_set( "cg_thirdperson", "0" );
-			}
 		}
 	}
 
@@ -1828,6 +1821,7 @@ void G_StopCinematicSkip( void )
 {
 	gi.cvar_set("skippingCinematic", "0");
 	gi.cvar_set("timescale", "1");
+	cgi_S_SetSoundTimeDilation();
 }
 
 void G_StartCinematicSkip( void )
@@ -2099,6 +2093,7 @@ extern cvar_t	*g_skippingcin;
 			if ( g_skippingcin->integer )
 			{//We're skipping the cinematic and it's over now
 				gi.cvar_set("timescale", "1");
+				cgi_S_SetSoundTimeDilation();
 				gi.cvar_set("skippingCinematic", "0");
 			}
 			if ( ent->client->ps.pm_type == PM_DEAD && cg.missionStatusDeadTime < level.time )
@@ -2117,12 +2112,11 @@ extern cvar_t	*g_skippingcin;
 		if ( cg.zoomMode == 2 )
 		{
 			// Any kind of movement when the player is NOT ducked when the disruptor gun is zoomed will cause us to auto-magically un-zoom
-			if ( ( (ucmd->forwardmove||ucmd->rightmove) 
+			if ( (( (ucmd->forwardmove||ucmd->rightmove) 
 				   && ucmd->upmove >= 0 //crouching-moving is ok
-				   && !(ucmd->buttons&BUTTON_USE)/*leaning is ok*/ 
-				 ) 
-				 || ucmd->upmove > 0 //jumping not allowed
-			   )
+				   && !(ucmd->buttons&BUTTON_USE)/*leaning is ok*/) 
+				 || ucmd->upmove > 0) //jumping not allowed
+				&& !PM_InShootDodgeInAir(&ent->client->ps))// but you can try to move around in shoot dodge while zoomed in
 			{
 				// already zooming, so must be wanting to turn it off
 				G_Sound( ent, G_SoundIndex( "sound/weapons/disruptor/zoomend.wav" ));
@@ -2144,14 +2138,15 @@ extern cvar_t	*g_skippingcin;
 			ucmd->upmove = 0;
 			PM_AdjustAnglesToGripper( ent, ucmd );
 		}
-		if ( ent->client->ps.leanofs )
+		// should be able to shoot while leaning
+		/*if ( ent->client->ps.leanofs )
 		{//no shooting while leaning
 			ucmd->buttons &= ~BUTTON_ATTACK;
 			if ( ent->client->ps.weapon != WP_DISRUPTOR )
 			{//can still zoom around corners
 				ucmd->buttons &= ~BUTTON_ALT_ATTACK;
 			}
-		}
+		}*/
 	}
 	else
 	{

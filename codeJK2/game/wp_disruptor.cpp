@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "w_local.h"
 #include "g_functions.h"
+#include "b_shootdodge.h"
 
 //---------------------
 //	Tenloss Disruptor
@@ -80,6 +81,9 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 			break;
 		}
 	}
+
+	if (PM_InShootDodgeInAir(&ent->client->ps))
+		damage *= SHOOT_DODGE_BOWCASTER_DAMAGE_MODIFIER;
 
 	VectorCopy( wpMuzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );
@@ -203,8 +207,18 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		VectorCopy( ent->client->renderInfo.eyePoint, start );
 		AngleVectors( ent->client->renderInfo.eyeAngles, wpFwd, NULL, NULL );
 
+		// always keep charge constant if you're in force speed or not
+		float timeDilationChargeModifier = getAllTimeDilation(&ent->client->ps);
+		float shootDodgeTenlossDamageModifier = 1.0f;
+
+		if (PM_InShootDodgeInAir(&ent->client->ps))
+		{
+			timeDilationChargeModifier *= SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;// but reduce charge time a tad in shoot dodge
+			shootDodgeTenlossDamageModifier = SHOOT_DODGE_TENLOSS_DAMAGE_MODIFIER;
+		}
+
 		// don't let NPC's do charging
-		int count = ( level.time - ent->client->ps.weaponChargeTime - 50 ) / DISRUPTOR_CHARGE_UNIT;
+		int count = ( level.time - ent->client->ps.weaponChargeTime - 50 ) / ( DISRUPTOR_CHARGE_UNIT * timeDilationChargeModifier);
 
 		if ( count < 1 )
 		{
@@ -228,6 +242,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		//else do full traces
 
 		damage = damage * count + weaponData[WP_DISRUPTOR].damage * 0.5f; // give a boost to low charge shots
+		damage *= shootDodgeTenlossDamageModifier;
 	}
 
 	skip = ent->s.number;

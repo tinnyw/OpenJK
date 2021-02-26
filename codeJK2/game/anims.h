@@ -1047,6 +1047,16 @@ typedef enum //# animNumber_e
 	BOTH_KNOCKDOWN3,		//#	knocked forwards
 	BOTH_KNOCKDOWN4,		//# knocked backwards from crouch
 	BOTH_KNOCKDOWN5,		//# dupe of 3 - will be removed
+	BOTH_SHOOTDODGE_F,
+	BOTH_SHOOTDODGE_B,
+	BOTH_SHOOTDODGE_L,
+	BOTH_SHOOTDODGE_R,
+	BOTH_GETUP_L,
+	BOTH_GETUP_R,
+	BOTH_FORCE_GETUP_L,
+	BOTH_FORCE_GETUP_R,
+	BOTH_FORCE_GETUP_L2,
+	BOTH_FORCE_GETUP_R2,
 	BOTH_GETUP1,			//#
 	BOTH_GETUP2,			//#
 	BOTH_GETUP3,			//#

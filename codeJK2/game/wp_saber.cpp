@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "anims.h"
 #include "b_local.h"
+#include "b_shootdodge.h"
 #include "bg_local.h"
 #include "g_functions.h"
 #include "wp_saber.h"
@@ -7798,7 +7799,9 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 		{//player using force speed
 			if ( g_timescale->value != 1.0 )
 			{
-				gi.cvar_set("timescale", "1");
+				float dilation = getShootDodgeTimeDilation(&self->client->ps);
+				gi.cvar_set("timescale", va("%f", dilation));
+				cgi_S_SetSoundTimeDilation();
 			}
 		}
 		//FIXME: reset my current anim, keeping current frame, but with proper anim speed
@@ -8030,10 +8033,10 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		}
 		break;
 	case FP_SPEED:
-		speed = forceSpeedValue[self->client->ps.forcePowerLevel[FP_SPEED]];
+		speed = getAllTimeDilation(&self->client->ps);
 		if ( !self->s.number )
 		{//player using force speed
-			gi.cvar_set("timescale", va("%4.2f", speed));
+			gi.cvar_set("timescale", va("%6.4f", speed));
 			if ( g_timescale->value > speed )
 			{
 				newSpeed = g_timescale->value - 0.05;
@@ -8041,7 +8044,8 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 				{
 					newSpeed = speed;
 				}
-				gi.cvar_set("timescale", va("%4.2f", newSpeed));
+				gi.cvar_set("timescale", va("%6.4f", newSpeed));
+				cgi_S_SetSoundTimeDilation();
 			}
 		}
 		break;

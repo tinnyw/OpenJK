@@ -25,6 +25,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // active (after loading) gameplay
 
 #include "../game/g_local.h"
+#include "../game/b_local.h"
+#include "../game/b_shootdodge.h"
 #include "cg_local.h"
 #include "cg_media.h"
 #include "../game/objectives.h"
@@ -796,6 +798,9 @@ static void CG_DrawHUD( centity_t *cent )
 		CG_DrawMessageLit(cent,x,y);
 		CG_DrawHUDRightFrame2(x,y);
 	}
+
+	if (PM_IsShootdodgeWeapon(cent->currentState.weapon) && cent->gent->client->ps.shootDodgeToggled)
+		CG_DrawPic(580, 320, 40, 40, cgs.media.shootDodgeToggle);
 }
 
 /*
@@ -1118,21 +1123,25 @@ static void CG_DrawZoomMask( void )
 			CG_DrawRotatePic2( cx, cy, 12, 24, 90 - i, cgs.media.disruptorInsertTick );
 		}
 
+		static float chargeToDraw = 0; // do this at real client systime since it's being wonky if we set it with cg.time
 		// FIXME: doesn't know about ammo!! which is bad because it draws charge beyond what ammo you may have..
-		if ( cg_entities[0].gent->client->ps.weaponstate == WEAPON_CHARGING_ALT )
+		if (cg_entities[0].gent->client->ps.weaponstate == WEAPON_CHARGING_ALT)
 		{
-			cgi_R_SetColor( colorTable[CT_WHITE] );
+			cgi_R_SetColor(colorTable[CT_WHITE]);
 
-			// draw the charge level
-			max = ( cg.time - cg_entities[0].gent->client->ps.weaponChargeTime ) / ( 150.0f * 10.0f ); // bad hardcodedness 150 is disruptor charge unit and 10 is max charge units allowed.
+			const float MAX_TENLOSS_CHARGE_COUNTS = 10.0f;
+			float shootDodgeClientSideChargeTimeModifier = 1.0f;
+			if (PM_InShootDodgeInAir(&cg_entities[0].gent->client->ps))
+				shootDodgeClientSideChargeTimeModifier *= SHOOT_DODGE_TENLOSS_CHARGE_REDUCTION;// but reduce charge time a tad in shoot dodge
 
-			if ( max > 1.0f )
-			{
-				max = 1.0f;
-			}
+			chargeToDraw += cg.actualClientFrameDeltaTime / (DISRUPTOR_CHARGE_UNIT * MAX_TENLOSS_CHARGE_COUNTS * shootDodgeClientSideChargeTimeModifier);
+			if (chargeToDraw > 1.0f)
+				chargeToDraw = 1.0f;
 
-			CG_DrawPic2( 257, 435, 134 * max, 34, 0,0,max,1,cgi_R_RegisterShaderNoMip( "gfx/2d/crop_charge" ));
+			CG_DrawPic2(257, 435, 134 * chargeToDraw, 34, 0, 0, chargeToDraw, 1, cgi_R_RegisterShaderNoMip("gfx/2d/crop_charge"));
 		}
+		else
+			chargeToDraw = 0;
 	}
 	//-----------
 	// Light Amp
@@ -1285,6 +1294,7 @@ void CG_DrawCredits(void)
 		if ( cg_skippingcin.integer )
 		{//Were skipping a cinematic and it's over now
 			gi.cvar_set("timescale", "1");
+			cgi_S_SetSoundTimeDilation();
 			gi.cvar_set("skippingCinematic", "0");
 		}
 	}
@@ -1595,6 +1605,13 @@ qboolean CG_WorldCoordToScreenCoord( vec3_t worldCoord, int *x, int *y ) {
 	return qfalse;
 }
 
+float getRocketLockTimeWithShootDodgeTimeDilation(playerState_t* ps)
+{
+	float shootDodgeDilation = getShootDodgeTimeDilation(ps);
+
+	return (float)ROCKET_LOCKTIME * shootDodgeDilation;
+}
+
 // I'm keeping the rocket tracking code separate for now since I may want to do different logic...but it still uses trace info from scanCrosshairEnt
 //-----------------------------------------
 static void CG_ScanForRocketLock( void )
@@ -1609,7 +1626,7 @@ static void CG_ScanForRocketLock( void )
 			|| ( traceEnt && traceEnt->client && traceEnt->client->ps.powerups[PW_CLOAKED] ))
 	{
 		// see how much locking we have
-		int dif = ( cg.time - g_rocketLockTime ) / ( 1200.0f / 8.0f );
+		int dif = ( cg.time - g_rocketLockTime ) / (getRocketLockTimeWithShootDodgeTimeDilation(&cg.snap->ps) / 8.0f );
 
 		// 8 is full locking....also if we just traced onto the world, 
 		//	give them 1/2 second of slop before dropping the lock
@@ -1632,9 +1649,9 @@ static void CG_ScanForRocketLock( void )
 		{
 			tempLock = qtrue;
 
-			if ( g_rocketLockTime + 1200 < cg.time )
+			if ( g_rocketLockTime + getRocketLockTimeWithShootDodgeTimeDilation(&cg.snap->ps) < cg.time )
 			{
-				g_rocketLockTime = cg.time - 1200; // doh, hacking the time so the targetting still gets drawn full
+				g_rocketLockTime = cg.time - getRocketLockTimeWithShootDodgeTimeDilation(&cg.snap->ps); // doh, hacking the time so the targetting still gets drawn full
 			}
 		} 		
 
@@ -1782,7 +1799,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 	}
 	if ( !cg_forceCrosshair )
 	{
-		if ( cg_dynamicCrosshair.integer )
+		if ( cg_dynamicCrosshair.integer && !PM_IsShootdodgeWeapon(cg.snap->ps.weapon)) // don't use dynamic crosshair when using a shoot dodge weapon
 		{//100% accurate
 			vec3_t d_f, d_rt, d_up;
 			if ( cg.snap->ps.weapon == WP_NONE || 
@@ -1994,9 +2011,9 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 		vec4_t color={0.0f,0.0f,0.0f,0.0f};
 
 		cy += sz * 0.5f;
-		
+
 		// well now, take our current lock time and divide that by 8 wedge slices to get the current lock amount
-		int dif = ( cg.time - g_rocketLockTime ) / ( 1200.0f / 8.0f );
+		int dif = ( cg.time - g_rocketLockTime ) / ( getRocketLockTimeWithShootDodgeTimeDilation(&cg.snap->ps) / 8.0f );
 
 		if ( dif < 0 )
 		{

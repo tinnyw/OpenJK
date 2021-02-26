@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define GAME_INCLUDE
 #include "../../code/qcommon/q_shared.h"
 #include "b_local.h"
+#include "b_shootdodge.h"
 #include "g_shared.h"
 #include "bg_local.h"
 #include "../cgame/cg_local.h"
@@ -55,6 +56,8 @@ extern qboolean PM_FlippingAnim( int anim );
 extern qboolean PM_RollingAnim( int anim );
 extern qboolean PM_SwimmingAnim( int anim );
 extern qboolean PM_InKnockDown( playerState_t *ps );
+extern qboolean PM_InShootDodge(playerState_t* ps);
+extern qboolean PM_InShootDodgeOnGround(playerState_t* ps);
 extern qboolean PM_InRoll( playerState_t *ps );
 extern qboolean PM_DodgeAnim( int anim );
 extern qboolean PM_InSlopeAnim( int anim );
@@ -2201,11 +2204,11 @@ float PM_GetTimeScaleMod( gentity_t *gent )
 		{
 			if ( gent && gent->s.clientNum == 0 && !player_locked && gent->client->ps.forcePowersActive&(1<<FP_SPEED) )
 			{
-				return (1.0 / g_timescale->value);
+				return (1.0 / getForceSpeedTimeDilation(&gent->client->ps));
 			}
 			else if ( gent && gent->client && gent->client->ps.forcePowersActive&(1<<FP_SPEED) )
 			{
-				return (1.0 / g_timescale->value);
+				return (1.0 / getForceSpeedTimeDilation(&gent->client->ps));
 			}
 		}
 	}
@@ -2221,7 +2224,7 @@ PM_SetAnimFinal
 void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 					 int setAnimParts,int anim,int setAnimFlags,
 					 int *torsoAnimTimer,int *legsAnimTimer,
-					 gentity_t *gent,int blendTime)		// default blendTime=350
+					 gentity_t *gent,int blendTime, qboolean blendingForShootDodge)		// default blendTime=350
 {
 	if(!ValidAnimFileIndex(gent->client->clientInfo.animFileIndex))
 	{
@@ -2269,9 +2272,9 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 
 		if ( gi.G2API_HaveWeGhoul2Models(gent->ghoul2) && gent->lowerLumbarBone != -1 )//gent->upperLumbarBone
 		{//see if we need to tell ghoul2 to play it again because of a animSpeed change
-			int		blah;
-			float	junk;
-			if (!gi.G2API_GetBoneAnimIndex( &gent->ghoul2[gent->playerModel], gent->lowerLumbarBone, actualTime, &junk, &blah, &blah, &blah, &oldAnimSpeed, NULL ))
+			int		blah = 0;
+			float	junk = .0f;
+			if (&gent->lowerLumbarBone >= 0 && !gi.G2API_GetBoneAnimIndex(&gent->ghoul2[gent->playerModel], gent->lowerLumbarBone, actualTime, &junk, &blah, &blah, &blah, &oldAnimSpeed, NULL))
 			{
 				animSpeed = oldAnimSpeed;
 			}
@@ -2651,6 +2654,13 @@ setAnimLegs:
 							-1,
 							blendTime);
 #endif
+						if (blendingForShootDodge)
+						{
+							int frameOfCurrentAnimation = currentFrame - startFrame;
+							firstFrame += frameOfCurrentAnimation;
+							if (firstFrame > lastFrame)
+								firstFrame = lastFrame;
+						}
 						gi.G2API_SetBoneAnimIndex(&gent->ghoul2[gent->playerModel], gent->rootBone,
 							firstFrame, lastFrame, animFlags,
 							animSpeed, actualTime, -1, blendTime);
@@ -3015,7 +3025,7 @@ PM_TorsoAnimation
 void PM_TorsoAnimation( void )
 {//FIXME: Write a much smarter and more appropriate anim picking routine logic...
 //	int	oldAnim;
-	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ))
+	if ( PM_InKnockDown( pm->ps ) || PM_InRoll( pm->ps ) || PM_InShootDodge(pm->ps))
 	{//in knockdown
 		return;
 	}
@@ -3323,7 +3333,8 @@ void PM_TorsoAnimation( void )
 				case WP_DISRUPTOR:
 					if ( (pm->ps->weaponstate != WEAPON_FIRING
 							&& pm->ps->weaponstate != WEAPON_CHARGING
-							&& pm->ps->weaponstate != WEAPON_CHARGING_ALT)
+							&& pm->ps->weaponstate != WEAPON_CHARGING_ALT
+							&& cg.zoomMode < 2) // if you're not using disruptor zoom
 							|| PM_RunningAnim( pm->ps->legsAnim )
 							|| PM_WalkingAnim( pm->ps->legsAnim )
 							|| PM_JumpingAnim( pm->ps->legsAnim )
@@ -3578,7 +3589,8 @@ void PM_TorsoAnimation( void )
 				case WP_DISRUPTOR:
 					if ( (pm->ps->weaponstate != WEAPON_FIRING
 							&& pm->ps->weaponstate != WEAPON_CHARGING
-							&& pm->ps->weaponstate != WEAPON_CHARGING_ALT)
+							&& pm->ps->weaponstate != WEAPON_CHARGING_ALT
+							&& cg.zoomMode < 2) // if you're not using disruptor zoom
 							|| PM_RunningAnim( pm->ps->legsAnim )
 							|| PM_WalkingAnim( pm->ps->legsAnim )
 							|| PM_JumpingAnim( pm->ps->legsAnim )
@@ -3957,9 +3969,9 @@ qboolean PM_InSpecialDeathAnim( int anim )
 	}
 }
 
-qboolean PM_InDeathAnim ( void )
+qboolean PM_InDeathAnim ( int legsAnim )
 {//Purposely does not cover stumbledeath and falldeath...
-	switch( pm->ps->legsAnim )
+	switch( legsAnim )
 	{
 	case BOTH_DEATH1:		//# First Death anim
 	case BOTH_DEATH2:			//# Second Death anim

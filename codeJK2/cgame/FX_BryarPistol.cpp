@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
+#include "../game/b_shootdodge.h"
 
 /*
 -------------------------
@@ -59,6 +60,14 @@ void FX_BryarProjectileThink(  centity_t *cent, const struct weaponInfo_s *weapo
 		float scale = ( dif / 75.0f ) * 0.95f + 0.05f;
 
 		VectorScale( forward, scale, forward );
+
+		if (cent && cent->gent && cent->gent->owner && PM_InShootDodgeInAir(&cent->gent->owner->client->ps))
+		{
+			vec3_t shootDodgeBlasterFXOrigin;
+			VectorMA(cent->lerpOrigin, SHOOT_DODGE_BLASTER_PROJECTILE_CLIENT_OFFSET, forward, shootDodgeBlasterFXOrigin);
+			theFxScheduler.PlayEffect(cgs.effects.bryarShotEffect, shootDodgeBlasterFXOrigin, forward);
+			return;
+		}
 	}
 
 	if ( cent->gent && cent->gent->owner && cent->gent->owner->s.number > 0 )
@@ -103,7 +112,7 @@ FX_BryarAltProjectileThink
 */
 void FX_BryarAltProjectileThink(  centity_t *cent, const struct weaponInfo_s *weapon )
 {
-	vec3_t forward;
+	vec3_t forward, pos;
 
 	if ( VectorNormalize2( cent->gent->s.pos.trDelta, forward ) == 0.0f )
 	{
@@ -126,16 +135,30 @@ void FX_BryarAltProjectileThink(  centity_t *cent, const struct weaponInfo_s *we
 		float scale = ( dif / 75.0f ) * 0.95f + 0.05f;
 
 		VectorScale( forward, scale, forward );
+
+
+		if (cent && cent->gent && cent->gent->owner && PM_InShootDodgeInAir(&cent->gent->owner->client->ps))
+		{
+			VectorMA(cent->lerpOrigin, SHOOT_DODGE_BLASTER_PROJECTILE_CLIENT_OFFSET, forward, pos);
+		}
+		else
+		{
+			VectorCopy(cent->lerpOrigin, pos);
+		}
+	}
+	else
+	{
+		VectorCopy(cent->lerpOrigin, pos);
 	}
 
 	// see if we have some sort of extra charge going on
 	for ( int t = 1; t < cent->gent->count; t++ )
 	{
 		// just add ourselves over, and over, and over when we are charged
-		theFxScheduler.PlayEffect( cgs.effects.bryarPowerupShotEffect, cent->lerpOrigin, forward );
+		theFxScheduler.PlayEffect( cgs.effects.bryarPowerupShotEffect, pos, forward );
 	}
 
-	theFxScheduler.PlayEffect( cgs.effects.bryarShotEffect, cent->lerpOrigin, forward );
+	theFxScheduler.PlayEffect( cgs.effects.bryarShotEffect, pos, forward );
 }
 
 /*

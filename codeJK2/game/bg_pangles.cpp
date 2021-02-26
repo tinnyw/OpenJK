@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "bg_local.h"
 #include "anims.h"
 #include "wp_saber.h"
+#include "b_shootdodge.h"
 
 extern qboolean PM_InAnimForSaberMove( int anim, int saberMove );
 extern qboolean PM_InForceGetUp( playerState_t *ps );
@@ -108,6 +109,8 @@ qboolean PM_AdjustAnglesToGripper( gentity_t *ent, usercmd_t *ucmd )
 	return qfalse;
 }
 
+qboolean canShootDodgeFromWallrun = qfalse;
+
 qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doMove )
 {
 	if (( ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT || ent->client->ps.legsAnim == BOTH_WALL_RUN_LEFT ) && ent->client->ps.legsAnimTimer > 500 )
@@ -116,6 +119,15 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 		vec3_t	rt, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};		
 		trace_t	trace;
 		float	dist, yawAdjust;
+
+		// only allow shootdoding from wall runs if pressing the opposite direction button from the direction of the wall run
+		// have to do this here since ucmd rightmove is cleared out for opposite direction
+		if (ent->client->ps.legsAnim == BOTH_WALL_RUN_LEFT && ucmd->rightmove > 0)
+			canShootDodgeFromWallrun = qtrue;
+		else if(ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT && ucmd->rightmove < 0)
+			canShootDodgeFromWallrun = qtrue;
+		else
+			canShootDodgeFromWallrun = qfalse;
 
 		AngleVectors( fwdAngles, NULL, rt, NULL );
 		if ( ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT )
@@ -356,10 +368,11 @@ qboolean PM_AdjustAnglesForSaberLock( gentity_t *ent, usercmd_t *ucmd )
 
 qboolean PM_AdjustAnglesForKnockdown( gentity_t *ent, usercmd_t *ucmd, qboolean angleClampOnly )
 {
-	if ( PM_InKnockDown( &ent->client->ps ) )
+	if ( PM_InKnockDown( &ent->client->ps ) || PM_InShootDodgeOnGround(&ent->client->ps) )
 	{//being knocked down or getting up, can't do anything!
 		if ( !angleClampOnly )
 		{
+			// can't move around while shoot dodging on the ground, but can shoot
 			ucmd->forwardmove = 0;
 			ucmd->rightmove = 0;
 			if ( ent->NPC )
@@ -369,7 +382,7 @@ qboolean PM_AdjustAnglesForKnockdown( gentity_t *ent, usercmd_t *ucmd, qboolean 
 			//you can jump up out of a knockdown and you get get up into a crouch from a knockdown
 			//ucmd->upmove = 0;
 			//if ( !PM_InForceGetUp( &ent->client->ps ) || ent->client->ps.torsoAnimTimer > 800 || ent->s.weapon != WP_SABER )
-			if ( ent->health > 0 )
+			if ( ent->health > 0 && !PM_InShootDodge(&ent->client->ps))
 			{//can only attack if you've started a force-getup and are using the saber
 				ucmd->buttons = 0;
 			}

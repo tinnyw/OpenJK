@@ -1945,12 +1945,14 @@ void CG_MatrixEffect ( centity_t *cent )
 		|| (cent->currentState.weapon&&g_entities[cent->currentState.otherEntityNum].client&&g_entities[cent->currentState.otherEntityNum].client->ps.groundEntityNum!=ENTITYNUM_NONE) 
 		|| cg.missionStatusShow )
 	{//time is up or this is a falling spin and they hit the ground or mission end screen is up
-		cg.overrides.active &= ~(/*CG_OVERRIDE_3RD_PERSON_ENT|*/CG_OVERRIDE_3RD_PERSON_RNG|CG_OVERRIDE_3RD_PERSON_ANG|CG_OVERRIDE_3RD_PERSON_POF);
+		cg.overrides.active &= ~(CG_OVERRIDE_3RD_PERSON_ENT|CG_OVERRIDE_3RD_PERSON_RNG|CG_OVERRIDE_3RD_PERSON_ANG|CG_OVERRIDE_3RD_PERSON_POF);
 		//cg.overrides.thirdPersonEntity = 0;
 		cg.overrides.thirdPersonAngle = 0;
 		cg.overrides.thirdPersonPitchOffset = 0;
 		cg.overrides.thirdPersonRange = 0;
+		cg.overrides.thirdPersonEntity = 0;
 		cgi_Cvar_Set( "timescale", "1.0" );
+		cgi_S_SetSoundTimeDilation();
 		MatrixMode = qfalse;
 		cent->gent->e_clThinkFunc = clThinkF_NULL;
 		return;
@@ -1973,6 +1975,13 @@ void CG_MatrixEffect ( centity_t *cent )
 	cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_ANG;
 	cg.overrides.thirdPersonAngle = 360.0f*elapsedTime/MATRIX_EFFECT_TIME;
 
+	// if other entity num is not player start looking
+	if (cent->currentState.otherEntityNum)
+	{
+		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_ENT;
+		cg.overrides.thirdPersonEntity = cent->currentState.otherEntityNum;
+	}
+
 	if ( !cent->currentState.weapon ) 
 	{//go ahead and do all the slowdown and vert bob stuff
 		//slowdown
@@ -1981,7 +1990,7 @@ void CG_MatrixEffect ( centity_t *cent )
 		{
 			timescale = 0.01f;
 		}
-		cgi_Cvar_Set( "timescale", va("%4.2f",timescale) );
+		cgi_Cvar_Set( "timescale", va("%6.4f",timescale) );
 
 		//pitch
 		//dip - FIXME: use pitchOffet?
@@ -2003,7 +2012,9 @@ void CG_MatrixEffect ( centity_t *cent )
 		//pull back
 		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_RNG;
 		cg.overrides.thirdPersonRange = cg_thirdPersonRange.value;
-		if ( elapsedTime < MATRIX_EFFECT_TIME*0.33 )
+		if (cg.overrides.active & CG_OVERRIDE_3RD_PERSON_ENT)
+			cg.overrides.thirdPersonRange *= 7.0f;
+		else if ( elapsedTime < MATRIX_EFFECT_TIME*0.33 )
 		{
 			cg.overrides.thirdPersonRange += 80.0f*elapsedTime/(MATRIX_EFFECT_TIME*0.33);
 		}

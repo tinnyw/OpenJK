@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_local.h"
 #include "g_icarus.h"
 #include "wp_saber.h"
+#include "b_shootdodge.h"
 #include "Q3_Interface.h"
 #include "../../code/qcommon/strippublic.h"
 
@@ -739,10 +740,10 @@ void G_MakeTeamVulnerable( void )
 
 void G_StartMatrixEffect( gentity_t *ent, qboolean falling = qfalse, int length = 1000 )
 {//FIXME: only do this if no other enemies around?
-	if ( g_timescale->value != 1.0 )
+	/*if ( g_timescale->value != 1.0 )
 	{//already in some slow-mo mode
 		return;
-	}
+	}*/
 
 	gentity_t	*matrix = G_Spawn();
 	if ( matrix )
@@ -802,6 +803,38 @@ qboolean G_JediInRoom( vec3_t from )
 		{
 			continue;
 		}
+		return qtrue;
+	}
+	return qfalse;
+}
+
+// new code to check for if there are any bad guys in the room left for matrix effect
+qboolean G_BadGuyInRoom(vec3_t from)
+{
+	gentity_t* ent;
+	int i;
+	//	for ( i = 1, ent = &g_entities[1]; i < globals.num_entities; i++, ent++ )
+	for (i = 1; i < globals.num_entities; i++)
+	{
+		if (!PInUse(i))
+			continue;
+
+		ent = &g_entities[i];
+		if (!ent->NPC)
+			continue;
+
+		if (ent->health <= 0)
+			continue;
+
+		if (ent->s.eFlags & EF_NODRAW)
+			continue;
+
+		if (ent->client && ent->client->playerTeam != TEAM_ENEMY)
+			continue;
+
+		if (!gi.inPVS(ent->currentOrigin, from))
+			continue;
+
 		return qtrue;
 	}
 	return qfalse;
@@ -1016,7 +1049,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 						*hitLoc = HL_BACK_LT;
 					}
 				}
-				else if ( upSide > -3 && mod == MOD_SABER )
+				else if ( upSide > -3/* && mod == MOD_SABER*/ )
 				{
 					*hitLoc = HL_HEAD;
 				}
@@ -2128,10 +2161,10 @@ static qboolean G_Dismemberable( gentity_t *self, int hitLoc )
 
 static qboolean G_Dismemberable2( gentity_t *self, int hitLoc )
 {
-	if ( self->client->dismembered )
+	/*if ( self->client->dismembered )
 	{//cannot dismember me right now
 		return qfalse;
-	}
+	}*/
 	if ( g_dismemberment->integer < 11381138 && !g_saberRealisticCombat->integer )
 	{
 		if ( g_dismemberProbabilities->value <= 0.0f )
@@ -2145,20 +2178,55 @@ static qboolean G_Dismemberable2( gentity_t *self, int hitLoc )
 	return qtrue;
 }
 
-extern qboolean G_StandardHumanoid( const char *modelName );
+
+qboolean isExplosive(int mod)
+{
+	switch (mod)
+	{
+	case MOD_ROCKET:
+	case MOD_ROCKET_ALT:
+	case MOD_REPEATER_ALT:
+	case MOD_FLECHETTE_ALT:
+	case MOD_EXPLOSIVE:
+	case MOD_EXPLOSIVE_SPLASH:
+	case MOD_EMPLACED:
+	case MOD_LASERTRIP:
+	case MOD_LASERTRIP_ALT:
+	case MOD_THERMAL:
+	case MOD_THERMAL_ALT:
+	case MOD_DETPACK:
+		return qtrue;
+	}
+	return qfalse;
+}
+
+qboolean isDismemberableMod(int mod)
+{
+	switch (mod)
+	{
+	case MOD_SABER:
+	case MOD_FLECHETTE:
+	case MOD_EMPLACED:
+		return qtrue;
+	}
+	return isExplosive(mod);// all explosive mods also dismember
+}
+
+extern cvar_t* g_iscensored;
+extern qboolean G_StandardHumanoid(const char* modelName);
+
 qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse )
 {
-extern cvar_t	*g_iscensored;
 	// dismemberment -- FIXME: should have a check for how long npc has been dead so people can't
 	// continue to dismember a dead body long after it's been dead
 	//NOTE that you can only cut one thing off unless the dismemberment is >= 11381138
 #ifdef GERMAN_CENSORED
 	if ( 0 ) //germany == censorship
 #else
-	if ( !g_iscensored->integer && ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && mod == MOD_SABER )//only lightsaber
+	if ( !g_iscensored->integer && ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && isDismemberableMod(mod) )//only lightsaber, or other heavy weapons
 #endif
 	{//FIXME: don't do strcmps here
-		if ( G_StandardHumanoid( self->NPC_type )
+		if ( G_StandardHumanoid( self->NPC_type ) && (mod == WP_SABER || (self && self->client && self->client->NPC_class == CLASS_PROTOCOL)) //let's keep it pg, only heavy weapons dismember droids
 			&& (force||g_dismemberProbabilities->value>0.0f||G_Dismemberable2( self, hitLoc )) )
 		{//either it's a forced dismemberment or we're using probabilities (which are checked before this) or we've done enough damage to this location
 			//FIXME: check the hitLoc and hitDir against the cap tag for the place
@@ -2173,7 +2241,7 @@ extern cvar_t	*g_iscensored;
 			switch( hitLoc )//self->hitLoc
 			{
 			case HL_LEG_RT:
-				if ( g_dismemberment->integer > 1 )
+				if ( g_dismemberment->integer )
 				{
 					doDismemberment = qtrue;
 					limbBone = "rtibia";
@@ -2189,7 +2257,7 @@ extern cvar_t	*g_iscensored;
 				}
 				break;
 			case HL_LEG_LT:
-				if ( g_dismemberment->integer > 1 )
+				if ( g_dismemberment->integer )
 				{
 					doDismemberment = qtrue;
 					limbBone = "ltibia";
@@ -2205,7 +2273,7 @@ extern cvar_t	*g_iscensored;
 				}
 				break;
 			case HL_WAIST:
-				if ( g_dismemberment->integer > 2 &&
+				if ( g_dismemberment->integer &&
 					(!self->s.number||!self->message))
 				{
 					doDismemberment = qtrue;
@@ -2291,7 +2359,7 @@ extern cvar_t	*g_iscensored;
 				}
 				break;
 			case HL_HEAD:
-				if ( g_dismemberment->integer > 2 )
+				if ( g_dismemberment->integer )
 				{
 					doDismemberment = qtrue;
 					limbBone = "cervical";
@@ -2322,6 +2390,96 @@ extern cvar_t	*g_iscensored;
 		}
 	}
 	return qfalse;
+}
+
+
+qboolean hitLocOnEntityToLocation(gentity_s* self, int hitLoc, vec3_t& limbLocation)
+{
+	if (!self || !G_StandardHumanoid(self->NPC_type))
+		return qfalse;
+
+	int	actualTime = (cg.time ? cg.time : level.time);
+	mdxaBone_t	boltMatrix;
+	vec3_t	/*tagOrg, */entYawAngles, partLocation;
+	int boltId = 0;
+	qboolean getLimbLocation = qfalse;
+
+	VectorSet(entYawAngles, 0, self->currentAngles[YAW], 0);
+	switch (hitLoc)
+	{
+	case HL_HAND_RT:
+		boltId = self->handRBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_HAND_LT:
+		boltId = self->handLBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_ARM_RT:
+		boltId = self->elbowRBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_ARM_LT:
+			boltId = self->elbowLBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_LEG_RT:
+			boltId = self->kneeRBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_LEG_LT:
+			boltId = self->kneeLBolt;
+		getLimbLocation = qtrue;
+		break;
+	case HL_HEAD:
+		boltId = self->headBolt;
+		getLimbLocation = qtrue;
+		break;
+	}
+
+	if (getLimbLocation)
+	{
+		gi.G2API_GetBoltMatrix(self->ghoul2, self->playerModel, boltId,
+			&boltMatrix, entYawAngles, self->currentOrigin,
+			actualTime, NULL, self->s.modelScale);
+		gi.G2API_GiveMeVectorFromMatrix(boltMatrix, ORIGIN, limbLocation);
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+
+// for explosions or C3P0
+void G_DoRadiusDismemberment(gentity_s* self, vec3_t explosionCenter, int mod, int damage, float dmgRadius, qboolean totalDismemberment = qfalse)
+{
+	if (g_iscensored->integer)
+		return;
+
+	if (g_dismemberment->integer < 1)
+		return;
+
+	const int MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT = 7;
+	int LIMBS_BY_EXREMETIES_FIRST[MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT] = {
+		HL_HAND_RT,
+		HL_HAND_LT, 
+		HL_ARM_RT,
+		HL_ARM_LT,
+		HL_LEG_RT,
+		HL_LEG_LT,
+		HL_HEAD
+	};
+
+	for (int i = 0; i < MAX_NUM_LIMBS_FOR_RADIUS_DISMEMBERMENT; i++)
+	{
+		vec3_t limbLoc;
+		int limbNum = LIMBS_BY_EXREMETIES_FIRST[i];
+		if (hitLocOnEntityToLocation(self, limbNum, limbLoc))
+		{
+			if (totalDismemberment || ((dmgRadius-Distance(explosionCenter, limbLoc)) / dmgRadius > .4f))
+				G_DoDismemberment(self, limbLoc, mod, damage, limbNum, qtrue);
+		}
+	}
 }
 
 static int G_CheckSpecialDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, int hitLoc )
@@ -3358,10 +3516,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		else
 		{
 			anim = G_PickDeathAnim( self, self->pos1, damage, meansOfDeath, hitLoc );
-			if ( dflags & DAMAGE_DISMEMBER )
-			{
+			if ( meansOfDeath == MOD_SABER ) //explosive dismemberment is handled in the actual radius damage code
 				G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc );
-			}
+
 			if ( anim >= 0 )
 			{
 				NPC_SetAnim(self, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
@@ -3369,6 +3526,16 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 		return;
 	}
+
+	// finally have explosive dismemberment for C3P0 and other protocol droids
+	if (isExplosive(meansOfDeath) && self->health <= 0)
+	{
+		anim = G_PickDeathAnim(self, self->pos1, damage, meansOfDeath, hitLoc);
+		if (anim >= 0)
+			NPC_SetAnim(self, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD);
+		G_DoRadiusDismemberment(self, inflictor->pos1, meansOfDeath, damage, 300.0f, qtrue);
+	}
+
 
 #ifndef FINAL_BUILD
 	if ( d_saberCombat->integer && attacker && attacker->client )
@@ -3518,7 +3685,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			{//any jedi killed by player-saber
 				if ( d_slowmodeath->integer < 3 )
 				{//must be the last jedi in the room
-					if ( !G_JediInRoom( attacker->currentOrigin ) )
+					if (!G_JediInRoom(attacker->currentOrigin))
 					{
 						lastInGroup = qtrue;
 					}
@@ -3537,6 +3704,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				{//Matrix!
 					G_StartMatrixEffect( self );
 				}
+				else if (attacker->client && PM_InShootDodge(&attacker->client->ps) && !G_BadGuyInRoom(attacker->currentOrigin))
+				{
+					G_StartMatrixEffect(self);
+				}
 			}
 			else
 			{//all player-saber kills
@@ -3548,6 +3719,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					&& (d_slowmodeath->integer > 4||lastInGroup||holdingSaber))//either slow mo death level 5 (any enemy) or 4 and I was the last in my group or I'm a saber user
 				{//Matrix!
 					G_StartMatrixEffect( self );
+				}
+				else if (attacker->client && PM_InShootDodge(&attacker->client->ps) && !G_BadGuyInRoom(attacker->currentOrigin))
+				{
+					G_StartMatrixEffect(self);
 				}
 			}
 		}
@@ -4102,8 +4277,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 	}
 
-	//do any dismemberment if there's any to do...
-	if ( (dflags&DAMAGE_DISMEMBER) && G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc ) && !specialAnim )
+	//do any dismemberment if there's any to do..., explosive dismemberment handled in radius damage
+	if ( !isExplosive(meansOfDeath) && /*(dflags&DAMAGE_DISMEMBER) &&*/ G_DoDismemberment( self, self->pos1, meansOfDeath, damage, hitLoc ) && !specialAnim )
 	{//we did dismemberment and our death anim is okay to override
 		if ( hitLoc == HL_HAND_RT && self->locationDamage[hitLoc] >= Q3_INFINITE && cliff_fall != 2 && self->client->ps.groundEntityNum != ENTITYNUM_NONE )
 		{//just lost our right hand and we're on the ground, use the special anim
@@ -5381,6 +5556,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				}
 			}
 		}
+	}
+
+	if (targ && targ->client && targ->health <= 0 && !isExplosive(mod))
+	{
+		G_DoDismemberment(targ, point, mod, damage, hitLoc, qtrue);
 	}
 }
 

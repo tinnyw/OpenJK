@@ -1,0 +1,215 @@
+// VIDEO WARNING
+{
+	menuDef 
+	{
+		name					"videowarningMenu"
+		visible					0
+		fullScreen				1								// MENU_TRUE			
+			rect				100 120 440 320
+		focusColor				1 1 1 1							// Focus color for text and items
+		outOfBoundsClick						// this closes the window if it gets a click out of the rectangle
+ 	  	style 				WINDOW_STYLE_FILLED
+		appearanceIncrement		75								// In miliseconds
+		descX					320
+		descY					450
+		descScale				.8
+		descColor				.96 .933 .40 1				// Focus color for text and items
+		descAlignment			ITEM_ALIGN_CENTER		
+		appearanceIncrement		100								// In miliseconds
+
+		border 1
+		popup
+										
+		onESC 
+		{ 
+			play				"sound/interface/button1.wav"
+			close				all
+			open				setupMenu
+		}
+
+		onClose
+		{
+			play				"sound/interface/button1.wav" ; 
+		}
+
+		itemDef 
+		{
+			name				warn_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				100 120 440 320
+			background			"gfx/menus/menu_boxred"					// Frame
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	VIDEO WARNING
+		//
+		//----------------------------------------------------------------------------------------------
+		// Video Warning title
+		itemDef 
+		{
+			name				vidwarn_title
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS2_UNAPPLIED_VIDEO_CHANGES
+      		rect				210 149 220 20
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			128
+			textaligny			-3
+			forecolor			1 1 1 1
+      		visible			1 
+			// appearance_slot		2
+      		decoration 
+		}
+
+
+		itemDef 
+		{
+			name				vidwarn_text1
+			group				vidwarn
+			text				@MENUS2_YOU_HAVE_MADE_CHANGES
+			rect				210 230 220 20
+			textalign			ITEM_ALIGN_CENTER
+			text2aligny			18
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			1 1 0 1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				vidwarn_text2
+			group				vidwarn
+			text				@MENUS2_APPLY_THESE_CHANGES_OR
+			rect				210 300 220 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			1 1 0 1
+			visible			1
+		}
+
+		itemDef 
+		{
+			name				vidwarn_no_button
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			rect				180 386 120 32 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0 
+			// appearance_slot		4
+		}
+
+		// DISCARD button - return to Video Data screen
+		itemDef 
+		{
+			name				vidwarn_no
+			group				vidwarn
+			text				@MENUS2_DISCARD
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				180 386 120 32 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			60
+			textaligny			-1
+			descText			@MENUS0_DO_NOT_APPLY_CHANGES
+			forecolor			.96 .933 .40 1
+			visible				1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			"videowarningMenu" ;
+
+				setcvar			"ui_r_modified" 0 ;
+
+				rundeferred ;
+			}
+
+			mouseEnter 
+			{ 
+				show		vidwarn_no_button
+			}
+
+			mouseExit 
+			{ 
+				hide		vidwarn_no_button
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name				vidwarn_yes_button
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			rect				340 386 120 32 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+			// appearance_slot		3
+		}
+
+		// APPLY button, use settings
+		itemDef 
+		{
+			name				vidwarn_yes
+			group				vidwarn
+			text				@MENUS2_APPLY
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				340 386 120 32 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			60
+			textaligny			0
+			descText			@MENUS0_APPLY_CHANGES_AND_THEN
+			forecolor			.96 .933 .40 1
+			visible				1
+			// appearance_slot		5
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+
+				uiScript		updatevideosetup ;
+
+//				uiScript		setvid1data	setupMenu ;		// Set video settings
+				close			all
+			}
+			mouseEnter 
+			{ 
+				show		vidwarn_yes_button
+			}
+			mouseExit 
+			{ 
+				hide		vidwarn_yes_button			
+			}	  	  
+		}
+	
+	}	
+}
+
+
+
+
+
+

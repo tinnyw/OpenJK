@@ -1280,74 +1280,23 @@ void G_RunMissile( gentity_t *ent )
 
 	//FIXME: Rolling things hitting G2 polys is weird
 	///////////////////////////////////////////////////////
-//?	if ( tr.fraction != 1 ) 
-	{
 	// did we hit or go near a Ghoul2 model?
-//		qboolean hitModel = qfalse;
-		for (int i=0; i < MAX_G2_COLLISIONS; i++)
+	// take out body parts even when dead
+	for (int i=0; i < MAX_G2_COLLISIONS; i++)
+	{
+		if (tr.G2CollisionMap[i].mEntityNum == -1)
+			continue;
+
+		CCollisionRecord &coll = tr.G2CollisionMap[i];
+		gentity_t	*hitEnt = &g_entities[coll.mEntityNum];
+
+		if (trHitLoc==HL_NONE)
 		{
-			if (tr.G2CollisionMap[i].mEntityNum == -1)
-			{
-				break;
-			}
-
-			CCollisionRecord &coll = tr.G2CollisionMap[i];
-			gentity_t	*hitEnt = &g_entities[coll.mEntityNum];
-
-/*	Sorry...this was just getting in the way....
-#if _DEBUG
-			vec3_t delta;
-			VectorSubtract(origin, coll.mCollisionPosition, delta);
-			VectorNormalize(delta);
-			VectorScale(delta, 30, delta);
-
-			if (coll.mFlags & G2_BACKFACE)
-			{
-				VectorAdd(delta, coll.mCollisionPosition, delta);
-				G_DebugLine(coll.mCollisionPosition, delta, 10000, 0x00ff0000, qtrue);
-			}
-			else
-			{
-				VectorSubtract(coll.mCollisionPosition, delta, delta);
-				G_DebugLine(coll.mCollisionPosition, delta, 10000, 0x0000ff00, qtrue);
-			}
-
-//loadsavecrash
-//			VectorCopy(hitEnt->mins, hitEnt->s.mins);
-//			VectorCopy(hitEnt->maxs, hitEnt->s.maxs);
-#endif
-*/
-
-			// process collision records here...
-			// make sure we only do this once, not for all the entrance wounds we might generate
-			if ((coll.mFlags & G2_FRONTFACE)/* && !(hitModel)*/ && hitEnt->health)
-			{
-				// create a new surface using the details of what poly/surface/model we hit
-//				int newSurface = gi.G2API_AddSurface(&hitEnt->ghoul2[coll.mModelIndex], coll.mSurfaceIndex, coll.mPolyIndex, coll.mBarycentricI, coll.mBarycentricJ, 10);
-//				surfaceInfo_t	*newSuf = &hitEnt->ghoul2[coll.mModelIndex].mSlist[newSurface];
-				// attach a bolt to this surface
-//				int newBolt = gi.G2API_AddBoltSurfNum(&hitEnt->ghoul2[coll.mModelIndex], newSurface);
-				// now attach an effect to this new bolt
-
-//	Bolting on this effect just looks dumb and adds lots of unnecessary effects to the scene
-//				
-//				G_PlayEffect( G_EffectIndex( "blaster/smoke_bolton") , coll.mModelIndex, newBolt, hitEnt->s.number);
-//
-//
-
-//				G_SetBoltSurfaceRemoval(coll.mEntityNum, coll.mModelIndex, newBolt, newSurface, 10000);
-//				hitModel = qtrue;
-
-				if (trHitLoc==HL_NONE)
-				{
-					G_GetHitLocFromSurfName( &g_entities[coll.mEntityNum], gi.G2API_GetSurfaceName( &g_entities[coll.mEntityNum].ghoul2[coll.mModelIndex], coll.mSurfaceIndex ), &trHitLoc, coll.mCollisionPosition, NULL, NULL, ent->methodOfDeath );
-				}
-
-				break; // NOTE: the way this whole section was working, it would only get inside of this IF once anyway, might as well break out now
-			}
+			G_GetHitLocFromSurfName( &g_entities[coll.mEntityNum], gi.G2API_GetSurfaceName( &g_entities[coll.mEntityNum].ghoul2[coll.mModelIndex], coll.mSurfaceIndex ), &trHitLoc, coll.mCollisionPosition, NULL, NULL, ent->methodOfDeath );
+			if (trHitLoc != HL_NONE)
+				break;//found a body part, break out
 		}
 	}
-/////////////////////////////////////////////////////////
 
 	if ( tr.startsolid ) 
 	{

@@ -158,6 +158,7 @@ void CGCam_Disable( void )
 	if ( cg_skippingcin.integer )
 	{//We're skipping the cinematic and it's over now
 		gi.cvar_set("timescale", "1");
+		cgi_S_SetSoundTimeDilation();
 		gi.cvar_set("skippingCinematic", "0");
 	}
 }

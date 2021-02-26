@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include "../game/g_local.h"
 #include "../game/b_local.h"
+#include "../game/b_shootdodge.h"
 #define	CG_PLAYERS_CPP
 #include "cg_media.h"
 #include "FxScheduler.h"
@@ -1752,11 +1753,13 @@ qboolean CG_PlayerLegsYawFromMovement( centity_t *cent, const vec3_t velocity, f
 	{
 		return qfalse;
 	}
-	if ( cent->gent && cent->gent->client && cent->gent->client->ps.forcePowersActive & (1 << FP_SPEED) )
+	/*
+	* Now handled in the main input controller so accounts for force speed and shoot dodge
+	if ( cent->gent && cent->gent->client && cent->gent->client->ps.forcePowersActive & (1 << FP_SPEED) && !PM_InShootDodgeInAir(&cent->gent->client->ps))
 	{//using force speed
 		//scale up the turning speed
 		turnRate /= cg_timescale.value;
-	}
+	}*/
 	//lerp the legs angle to the new angle
 	angleDiff = AngleDelta( cent->pe.legs.yawAngle, (*yaw+addAngle) );
 	newAddAngle = angleDiff*cg.frameInterpolation*-1;
@@ -2065,6 +2068,8 @@ Handles seperate torso motion
 */
 extern int PM_TurnAnimForLegsAnim( gentity_t *gent, int anim );
 extern float PM_GetTimeScaleMod( gentity_t *gent );
+extern qboolean PM_InShootDodgeInAir(playerState_t* ps);
+extern qboolean PM_InGetUp(playerState_t* ps);
 void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 {
 	vec3_t		headAngles, neckAngles, chestAngles, thoracicAngles = {0,0,0};//legsAngles, torsoAngles,
@@ -2215,7 +2220,6 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 		}
 		else
 		{
-
 			//set the legs.yawing field so we play the turning anim when turning in place
 			if ( angles[YAW] == cent->pe.legs.yawAngle )
 			{
@@ -2230,7 +2234,78 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			{
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
-			if ( cent->gent->client->ps.eFlags & EF_FORCE_GRIPPED && cent->gent->client->ps.groundEntityNum == ENTITYNUM_NONE )
+
+			// create storage variables for maintining state of shoot dodge angles between frames
+			static qboolean havePreviousShootDodgeAngle = qfalse;
+			static float previousShootDodgeAngle = 0;
+			static int previousShootDodgeAngleTime = 0;
+
+			// clear it out when not in shoot dodge anymore
+			if (cent->gent->client->ps.clientNum == 0 && !PM_InShootDodge(&cent->gent->client->ps))
+			{
+				havePreviousShootDodgeAngle = qfalse;
+				previousShootDodgeAngle = 0;
+				previousShootDodgeAngleTime = 0;
+			}
+
+			// if getting up from a shoot dodge face the direction you were moving
+			if (PM_InGetUp(&cent->gent->client->ps))
+			{
+				vec3_t shootDodgeDir, shootDodgeAngles;
+				VectorNormalize2(cent->gent->client->ps.shootDodgeDir, shootDodgeDir);
+				vectoangles(shootDodgeDir, shootDodgeAngles);
+				switch (cent->gent->client->ps.legsAnim)
+				{
+				case BOTH_GETUP_L:
+				case BOTH_FORCE_GETUP_L:
+				case BOTH_FORCE_GETUP_L2:
+				case BOTH_GETUP_R:
+				case BOTH_FORCE_GETUP_R:
+				case BOTH_FORCE_GETUP_R2:
+					angles[YAW] = AngleNormalize180(shootDodgeAngles[YAW]);
+					break;
+				}
+			}
+			// when shoot dodging face direction you're moving
+			else if (PM_InShootDodge(&cent->gent->client->ps))
+			{
+				vec3_t shootDodgeAngles;
+				vectoangles(cent->gent->client->ps.shootDodgeDir, shootDodgeAngles);
+
+				float desiredShootDodgeYawAngle;
+
+				// set angle of which way you're trying to face based on shoot dodge animation
+				switch (cent->gent->client->ps.legsAnim)
+				{
+				case BOTH_SHOOTDODGE_B:
+					desiredShootDodgeYawAngle = AngleNormalize180(shootDodgeAngles[YAW] + 180);
+					break;
+				case BOTH_SHOOTDODGE_L:
+					desiredShootDodgeYawAngle = AngleNormalize180(shootDodgeAngles[YAW] - 90);
+					break;
+				case BOTH_SHOOTDODGE_R:
+					desiredShootDodgeYawAngle = AngleNormalize180(shootDodgeAngles[YAW] + 90);
+					break;
+				default:
+					desiredShootDodgeYawAngle = AngleNormalize180(shootDodgeAngles[YAW]);
+				}
+
+				// when in the air and turning, turn at a rate so movements don't look robotic, also if it's less than 2 degrees, clamp so it doesn't jitter
+				if (havePreviousShootDodgeAngle && PM_InShootDodgeInAir(&cent->gent->client->ps) && fabs(AngleNormalize180(desiredShootDodgeYawAngle - previousShootDodgeAngle)) > 2.0f)
+				{
+					if (AngleNormalize180(desiredShootDodgeYawAngle - previousShootDodgeAngle) > 0) 
+						angles[YAW] = previousShootDodgeAngle + SHOOT_DODGE_CLIENT_TURN_RATE * (cg.time - previousShootDodgeAngleTime);
+					else
+						angles[YAW] = previousShootDodgeAngle - SHOOT_DODGE_CLIENT_TURN_RATE * (cg.time - previousShootDodgeAngleTime);
+				}
+				else // don't do this when on ground or just starting shoot dodging to set up initial state
+					angles[YAW] = desiredShootDodgeYawAngle;
+
+				previousShootDodgeAngle = angles[YAW];
+				havePreviousShootDodgeAngle = qtrue;
+				previousShootDodgeAngleTime = cg.time;
+			}
+			else if ( cent->gent->client->ps.eFlags & EF_FORCE_GRIPPED && cent->gent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 			{
 				vec3_t	centFwd, centRt;
 

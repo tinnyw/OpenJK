@@ -301,6 +301,7 @@ vmCvar_t	cg_thirdPersonHorzOffset;
 vmCvar_t	cg_stereoSeparation;
 vmCvar_t 	cg_developer;
 vmCvar_t 	cg_timescale;
+vmCvar_t 	cg_sounddilation; //cvar for whether sounds should dilate with shoot dodge
 vmCvar_t	cg_skippingcin;
 
 vmCvar_t	cg_pano;
@@ -347,7 +348,7 @@ static cvarTable_t cvarTable[] = {
 
 	{ &cg_draw2D, "cg_draw2D", "1", CVAR_ARCHIVE  },
 	{ &cg_drawStatus, "cg_drawStatus", "1", CVAR_ARCHIVE  },
-	{ &cg_drawHUD, "cg_drawHUD", "1", 0  },
+	{ &cg_drawHUD, "cg_drawHUD", "1", CVAR_SAVEGAME },
 	{ &cg_drawTimer, "cg_drawTimer", "0", CVAR_ARCHIVE  },
 	{ &cg_drawFPS, "cg_drawFPS", "0", CVAR_ARCHIVE  },
 	{ &cg_drawSnapshot, "cg_drawSnapshot", "0", CVAR_ARCHIVE  },
@@ -368,6 +369,8 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_crosshairY, "cg_crosshairY", "0", CVAR_ARCHIVE },
 	{ &cg_simpleItems, "cg_simpleItems", "0", CVAR_ARCHIVE },
 	{ &cg_addMarks, "cg_marks", "1", CVAR_ARCHIVE },
+
+	{ &cg_sounddilation, "cg_sounddilation", "1", CVAR_ARCHIVE | CVAR_SAVEGAME },
 
 	{ &cg_gun_frame, "gun_frame", "0", CVAR_CHEAT },
 	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },
@@ -419,7 +422,7 @@ static cvarTable_t cvarTable[] = {
 
 	{ &cg_paused, "cl_paused", "0", CVAR_ROM },
 	{ &cg_developer, "developer", "", 0 },
-	{ &cg_timescale, "timescale", "1", 0 },
+	{ &cg_timescale, "timescale", "1", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART },
 	{ &cg_skippingcin, "skippingCinematic", "0", CVAR_ROM},
 	{ &cg_missionInfoCentered, "cg_missionInfoCentered", "1", CVAR_ARCHIVE },
 	{ &cg_missionInfoFlashTime, "cg_missionInfoFlashTime", "10000", 0  },
@@ -694,6 +697,8 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.zoomStart = cgi_S_RegisterSound( "sound/interface/zoomstart.wav" );
 	cgs.media.zoomLoop = cgi_S_RegisterSound( "sound/interface/zoomloop.wav" );
 	cgs.media.zoomEnd = cgi_S_RegisterSound( "sound/interface/zoomend.wav" );
+
+	cgi_S_RegisterSound("sound/shoot_dodge/shoot_dodge_loop.wav");
 
 	cgi_S_RegisterSound( "sound/chars/turret/startup.wav" );
 	cgi_S_RegisterSound( "sound/chars/turret/shutdown.wav" );
@@ -1636,6 +1641,8 @@ Ghoul2 Insert End
 
 	CG_ClearLightStyles();
 
+	// have sound dilation being reset on game load or quickload
+	cgi_S_SetSoundTimeDilation();
 }
 
 void CG_WriteTheEvilCGHackStuff(void)
@@ -1756,6 +1763,8 @@ void CG_Init( int serverCommandSequence ) {
 		"gfx/hud/f_icon_saber_defend",
 		"gfx/hud/f_icon_saber_attack",
 	};
+
+	cgs.media.shootDodgeToggle = cgi_R_RegisterShaderNoMip("gfx/hud/sharon_clock");
 
 	// Precache inventory icons
 	for ( int i=0;i<NUM_FORCE_POWERS;i++)

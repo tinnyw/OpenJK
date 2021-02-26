@@ -23,6 +23,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_headers.h"
 
 #include "b_local.h"
+#include "b_shootdodge.h"
 #include "g_local.h"
 #include "wp_saber.h"
 #include "w_local.h"
@@ -42,7 +43,11 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 	VectorCopy( wpMuzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
-	gentity_t *missile = CreateMissile( start, dir, REPEATER_VELOCITY, 10000, ent );
+	int velocity = REPEATER_VELOCITY;
+	if (ent->client && PM_InShootDodge(&ent->client->ps))
+		velocity *= SHOOT_DODGE_REPEATER_VELOCITY_MODIFIER;
+
+	gentity_t *missile = CreateMissile( start, dir, velocity, 10000, ent );
 
 	missile->classname = "repeater_proj";
 	missile->s.weapon = WP_REPEATER;
@@ -72,6 +77,8 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 //	}
 
 	missile->damage = damage;
+	if (ent->client && PM_InShootDodge(&ent->client->ps))
+		missile->damage *= SHOOT_DODGE_REPEATER_DAMAGE_MODIFIER;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->methodOfDeath = MOD_REPEATER;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
@@ -171,9 +178,12 @@ void WP_FireRepeater( gentity_t *ent, qboolean alt_fire )
 		}
 		else
 		{
+			float shootDodgeSpreadModifier = 1.0f;
+			if (ent->client && PM_InShootDodgeInAir(&ent->client->ps))
+				shootDodgeSpreadModifier = SHOOT_DODGE_REPEATER_SPREAD_MODIFIER;
 			// add some slop to the alt-fire direction
-			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD;
-			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD;
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD * shootDodgeSpreadModifier;
+			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * REPEATER_SPREAD * shootDodgeSpreadModifier;
 		}
 
 		AngleVectors( angs, dir, NULL, NULL );

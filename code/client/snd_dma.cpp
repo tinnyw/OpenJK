@@ -4674,11 +4674,11 @@ void setPitchDilationByTimescale()
 	float timescaleValue = com_timescale->value;
 
 	if (timescaleValue < .02f)
-		pitchDilation = .7f;
+		pitchDilation = .64f;
 	else if (timescaleValue < 1.0f)
-		pitchDilation = .8f;
+		pitchDilation = .75f;
 	else if (timescaleValue > 1.0f)
-		pitchDilation = 1.2f;
+		pitchDilation = 1.3f;
 
 	setSoundPitchForTimeDilation(pitchDilation);
 }
